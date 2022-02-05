@@ -5,7 +5,7 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637796662800000000
+      ticks: 637796753180000000
     m_Hash: 1289718841
   m_LockFileStatus:
     m_FilePath: /home/daniel/Projects/Unity/island-game/Packages/packages-lock.json
@@ -13,7 +13,7 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 637796662810000000
+      ticks: 637796753320000000
     m_Hash: 1156254839
 m_EmbeddedPackageManifests:
   m_ManifestsStatus: {}
