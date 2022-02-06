@@ -11,6 +11,7 @@ public class NetworkRoomPlayerIsland : NetworkBehaviour
 
     [SerializeField] private GameObject canvas;
     [SerializeField] private TMP_Text[] playerNameTexts = new TMP_Text[3];
+    [SerializeField] private GameObject startButton;
 
     private NetworkManagerIsland room;
     private NetworkManagerIsland Room
@@ -58,6 +59,12 @@ public class NetworkRoomPlayerIsland : NetworkBehaviour
 
     public void HandleDisplayNameChanged(string oldValue, string newValue) => UpdateDisplay();
 
+    public void StartGame() {
+        if (IsLeader) {
+            Room.StartGame();
+        }
+    }
+
     public void UpdateDisplay()
     {
         // Look for own GUI
@@ -76,6 +83,9 @@ public class NetworkRoomPlayerIsland : NetworkBehaviour
             return;
         }
         canvas.SetActive(true);
+
+        startButton.SetActive(IsLeader);
+
         Debug.Log("updating display for " + Room.RoomPlayers.Count + " players");
 
         // Clear all names

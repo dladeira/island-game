@@ -1,8 +1,10 @@
 using UnityEngine;
+using Mirror;
 
-public class PlayerController : MonoBehaviour
+public class NetworkGamePlayerIsland : NetworkBehaviour
 {
-    [SerializeField] private float maxGroundSpeed;
+    [SyncVar] public string displayName;
+
     [SerializeField] private float accel;
     [SerializeField] private float friction;
     [SerializeField] private float jumpForce;
@@ -14,6 +16,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        DontDestroyOnLoad(this);
         rb = GetComponent<Rigidbody>();
     }
 
@@ -45,7 +48,6 @@ public class PlayerController : MonoBehaviour
 
     private Vector3 CalculateMovement(Vector2 input, Vector3 currentVelocity)
     {
-        float maxSpeed = maxGroundSpeed;
 
         if (!CheckGround())
         {

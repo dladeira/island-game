@@ -18,11 +18,13 @@ public class NetworkManagerIsland : NetworkManager
 
     [Header("Prefabs")]
     [SerializeField] private NetworkRoomPlayerIsland roomPlayerPrefab;
+    [SerializeField] private NetworkGamePlayerIsland gamePlayerPrefab;
 
     public static event Action OnClientConnected;
     public static event Action OnClientDisconnected;
 
     public List<NetworkRoomPlayerIsland> RoomPlayers { get; } = new List<NetworkRoomPlayerIsland>();
+    public List<NetworkGamePlayerIsland> GamePlayers { get; } = new List<NetworkGamePlayerIsland>();
 
     public override void Start()
     {
@@ -49,7 +51,6 @@ public class NetworkManagerIsland : NetworkManager
 
     public override void OnServerAddPlayer(NetworkConnection conn)
     {
-        Debug.Log("adding player");
         if (SceneManager.GetActiveScene().path == lobbyScene)
         {
             NetworkRoomPlayerIsland roomPlayer = Instantiate(roomPlayerPrefab);
@@ -79,11 +80,9 @@ public class NetworkManagerIsland : NetworkManager
             base.OnServerDisconnect(conn);
         }
     }
-
     public override void OnStopServer()
     {
         OnClientDisconnected?.Invoke();
-        Debug.Log("stopping server");
         base.OnStopServer();
     }
 
@@ -102,10 +101,37 @@ public class NetworkManagerIsland : NetworkManager
 
     public void SendPlayerList()
     {
-        Debug.Log("sending the player list");
         foreach (var player in RoomPlayers)
         {
             player.UpdateDisplay();
         }
+    }
+
+    public void StartGame()
+    {
+        if (SceneManager.GetActiveScene().path == lobbyScene)
+        {
+            ServerChangeScene(gameScene);
+        }
+    }
+
+    public override void ServerChangeScene(string newSceneName)
+    {
+        // From Lobby to Game
+        if (SceneManager.GetActiveScene().path == lobbyScene && newSceneName == gameScene)
+        {
+            for (int i = 0; RoomPlayers.Count > i; i++)
+            {
+                var conn = RoomPlayers[i].connectionToClient;
+                NetworkGamePlayerIsland playerInstance = Instantiate(gamePlayerPrefab);
+                // NetworkServer.ReplacePlayerForConnection(conn, playerInstance.gameObject);
+                playerInstance.displayName = (RoomPlayers[i].DisplayName);
+                GamePlayers.Add(playerInstance);
+            }
+            base.ServerChangeScene(newSceneName);
+            return;
+        }
+
+        base.ServerChangeScene(newSceneName);
     }
 }
