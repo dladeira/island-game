@@ -42,6 +42,20 @@ public class NetworkRoomPlayerIsland : NetworkBehaviour
         UpdateDisplay();
     }
 
+    public void OnLeaveButtonPress()
+    {
+        if (!isServer)
+        {
+            Debug.Log("stopping client");
+            Room.StopClient();
+        }
+        else
+        {
+            Debug.Log("stopping server");
+            Room.StopHost();
+        }
+    }
+
     public void HandleDisplayNameChanged(string oldValue, string newValue) => UpdateDisplay();
 
     public void UpdateDisplay()

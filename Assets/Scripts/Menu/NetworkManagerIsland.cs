@@ -80,6 +80,13 @@ public class NetworkManagerIsland : NetworkManager
         }
     }
 
+    public override void OnStopServer()
+    {
+        OnClientDisconnected?.Invoke();
+        Debug.Log("stopping server");
+        base.OnStopServer();
+    }
+
     public override void OnClientConnect()
     {
         base.OnClientConnect();
