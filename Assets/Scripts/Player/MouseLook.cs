@@ -13,6 +13,9 @@ public class MouseLook : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            Cursor.lockState = Cursor.lockState == CursorLockMode.None ? CursorLockMode.Locked : CursorLockMode.None;
+        }
         float rotationX = player.transform.localEulerAngles.y + Input.GetAxis("Mouse X") * sens;
 
         rotationY += Input.GetAxis("Mouse Y") * sens;
