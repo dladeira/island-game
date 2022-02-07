@@ -124,7 +124,7 @@ public class NetworkManagerIsland : NetworkManager
             {
                 var conn = RoomPlayers[i].connectionToClient;
                 NetworkGamePlayerIsland playerInstance = Instantiate(gamePlayerPrefab);
-                // NetworkServer.ReplacePlayerForConnection(conn, playerInstance.gameObject);
+                NetworkServer.ReplacePlayerForConnection(conn, playerInstance.gameObject);
                 playerInstance.displayName = (RoomPlayers[i].DisplayName);
                 GamePlayers.Add(playerInstance);
             }

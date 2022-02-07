@@ -1521,6 +1521,7 @@ MonoBehaviour:
   playerSpawnMethod: 0
   spawnPrefabs:
   - {fileID: 1168341053583958997, guid: 6dc65d8b78143d52fae33f46ea8451bf, type: 3}
+  - {fileID: 6019103102172592656, guid: 58a4749aa4c4496ff84d933f4783672f, type: 3}
   lobbyScene: Assets/Scenes/Menu.unity
   gameScene: Assets/Scenes/Game.unity
   roomPlayerPrefab: {fileID: 6089913168278772603, guid: 6dc65d8b78143d52fae33f46ea8451bf, type: 3}

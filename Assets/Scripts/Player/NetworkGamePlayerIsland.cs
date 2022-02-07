@@ -9,6 +9,14 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     [SerializeField] private float friction;
     [SerializeField] private float jumpForce;
 
+    [SerializeField] public float sens = 10F;
+    [SerializeField] private Transform playerCamera;
+
+    private float minY = -90F;
+    private float maxY = 90F;
+
+    float rotationY = 0F;
+
     private float jumpTime = -1;
     private float jumpDuration = 0.1f;
 
@@ -20,20 +28,44 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    void Update() {
-        if (Input.GetKeyDown(KeyCode.Space)) {
-            jumpTime = Time.time;
+    void Update()
+    {
+        playerCamera.gameObject.SetActive(hasAuthority);
+
+        if (hasAuthority)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                jumpTime = Time.time;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Cursor.lockState = Cursor.lockState == CursorLockMode.None ? CursorLockMode.Locked : CursorLockMode.None;
+            }
+            
+            float rotationX = transform.localEulerAngles.y + Input.GetAxis("Mouse X") * sens;
+
+            rotationY += Input.GetAxis("Mouse Y") * sens;
+            rotationY = Mathf.Clamp(rotationY, minY, maxY);
+
+            playerCamera.transform.localEulerAngles = new Vector3(-rotationY, 0, 0);
+            transform.localEulerAngles = new Vector3(0, rotationX, 0);
         }
+
     }
 
     void FixedUpdate()
     {
-        Vector3 playerVelocity = rb.velocity;
+        if (hasAuthority)
+        {
+            Vector3 playerVelocity = rb.velocity;
 
-        playerVelocity = CalculateFriction(playerVelocity);
-        playerVelocity += CalculateMovement(new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")), playerVelocity);
+            playerVelocity = CalculateFriction(playerVelocity);
+            playerVelocity += CalculateMovement(new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")), playerVelocity);
 
-        rb.velocity = playerVelocity;
+            rb.velocity = playerVelocity;
+        }
     }
 
     private Vector3 CalculateFriction(Vector3 currentVelocity)
