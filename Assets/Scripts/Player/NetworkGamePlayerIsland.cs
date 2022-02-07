@@ -1,10 +1,12 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Mirror;
 
 public class NetworkGamePlayerIsland : NetworkBehaviour
 {
     [SyncVar] public string displayName;
 
+    [Scene] [SerializeField] private string lobbyScene;
     [SerializeField] private float accel;
     [SerializeField] private float friction;
     [SerializeField] private float jumpForce;
@@ -43,7 +45,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
             {
                 Cursor.lockState = Cursor.lockState == CursorLockMode.None ? CursorLockMode.Locked : CursorLockMode.None;
             }
-            
+
             float rotationX = transform.localEulerAngles.y + Input.GetAxis("Mouse X") * sens;
 
             rotationY += Input.GetAxis("Mouse Y") * sens;
@@ -66,6 +68,21 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
             rb.velocity = playerVelocity;
         }
+    }
+
+    void OnEnable()
+    {
+        NetworkManagerIsland.OnClientDisconnected += ReturnToMainMenu;
+    }
+
+    void OnDisable()
+    {
+        NetworkManagerIsland.OnClientDisconnected -= ReturnToMainMenu;
+    }
+
+    void ReturnToMainMenu()
+    {
+        SceneManager.LoadScene(lobbyScene);
     }
 
     private Vector3 CalculateFriction(Vector3 currentVelocity)

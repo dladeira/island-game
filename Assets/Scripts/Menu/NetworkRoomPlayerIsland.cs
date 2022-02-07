@@ -59,8 +59,10 @@ public class NetworkRoomPlayerIsland : NetworkBehaviour
 
     public void HandleDisplayNameChanged(string oldValue, string newValue) => UpdateDisplay();
 
-    public void StartGame() {
-        if (IsLeader) {
+    public void StartGame()
+    {
+        if (IsLeader)
+        {
             Room.StartGame();
         }
     }
@@ -70,7 +72,8 @@ public class NetworkRoomPlayerIsland : NetworkBehaviour
         // Look for own GUI
         if (!hasAuthority)
         {
-            canvas.SetActive(false);
+            if (canvas)
+                canvas.SetActive(false);
             foreach (var player in Room.RoomPlayers)
             {
                 if (player.hasAuthority)

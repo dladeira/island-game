@@ -248,6 +248,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   displayName: 
+  lobbyScene: Assets/Scenes/Menu.unity
   accel: 1
   friction: 10
   jumpForce: 3

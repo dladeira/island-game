@@ -17,8 +17,13 @@ public class CanvasController : MonoBehaviour
     [SerializeField] private TMP_InputField nameInput;
     [SerializeField] private Button nameLockBtn;
 
-    [Header("MainMenu")]
-    [SerializeField] private NetworkManagerIsland networkManager;
+    [SerializeField] private NetworkManagerIsland networkManager
+    {
+        get
+        {
+            return GameObject.Find("NetworkManager").GetComponent<NetworkManagerIsland>();
+        }
+    }
 
     public static string displayName { get; private set; }
 
