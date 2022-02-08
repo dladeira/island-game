@@ -14,6 +14,8 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     [SerializeField] public float sens = 10F;
     [SerializeField] private Transform playerCamera;
 
+    [SerializeField] private Animator animator;
+
     private float minY = -90F;
     private float maxY = 90F;
 
@@ -54,11 +56,12 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
             playerCamera.transform.localEulerAngles = new Vector3(-rotationY, 0, 0);
             transform.localEulerAngles = new Vector3(0, rotationX, 0);
         }
-
     }
 
     void FixedUpdate()
     {
+        animator.SetBool("IsRunning", rb.velocity.magnitude > 0.5);
+
         if (hasAuthority)
         {
             Vector3 playerVelocity = rb.velocity;
