@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Mirror;
@@ -15,14 +16,22 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     [SerializeField] private Transform playerCamera;
 
     [SerializeField] private Animator animator;
+    [SerializeField] private Transform groundCheck;
 
     private float minY = -90F;
     private float maxY = 90F;
 
     float rotationY = 0F;
 
-    private float jumpTime = -1;
-    private float jumpDuration = 0.1f;
+    private bool pressedJump = false;
+    private float timeSinceJump = 0;
+
+    [SerializeField] private Transform vaultLoc1;
+    [SerializeField] private Transform vaultLoc2;
+    [SerializeField] private float vL1Distance;
+    [SerializeField] private float vL2Distance;
+    [SerializeField] private float vaultSpeed;
+    [SerializeField] private float vaultVerticalSpeed;
 
     private Rigidbody rb;
 
@@ -40,7 +49,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                jumpTime = Time.time;
+                pressedJump = true;
             }
 
             if (Input.GetKeyDown(KeyCode.Escape))
@@ -60,6 +69,8 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
     void FixedUpdate()
     {
+        timeSinceJump += Time.fixedDeltaTime;
+
         animator.SetBool("IsRunning", rb.velocity.magnitude > 0.5);
 
         if (hasAuthority)
@@ -92,7 +103,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     {
         float speed = currentVelocity.magnitude;
 
-        if (!CheckGround() || Input.GetKeyDown(KeyCode.Space) || speed == 0) return currentVelocity;
+        if (!CheckGround() || Input.GetKeyDown(KeyCode.Space) || speed == 0) return currentVelocity * (1 - (0.1f * Time.fixedDeltaTime));
 
         float drop = speed * friction * Time.deltaTime;
         return currentVelocity * (Mathf.Max(speed - drop, 0f) / speed);
@@ -100,13 +111,14 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
     private Vector3 CalculateMovement(Vector2 input, Vector3 currentVelocity)
     {
+        Vector3 inputVelocity = new Vector3(0, 0, 0);
 
-        if (!CheckGround())
+        animator.SetBool("IsJumping", pressedJump);
+
+        if (CheckGround())
         {
-            return Vector3.zero;
+            inputVelocity = Quaternion.Euler(transform.eulerAngles) * new Vector3(input.x * accel, 0f, input.y * accel);
         }
-
-        Vector3 inputVelocity = Quaternion.Euler(transform.eulerAngles) * new Vector3(input.x * accel, 0f, input.y * accel);
         inputVelocity += CalculateJump(inputVelocity.y);
 
         return inputVelocity;
@@ -114,18 +126,52 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
     private Vector3 CalculateJump(float yVelocity)
     {
-        if (Time.time < jumpTime + jumpDuration && yVelocity < jumpForce && CheckGround())
+        if (pressedJump && yVelocity < jumpForce && CheckGround())
         {
-            Debug.Log(Vector3.up * jumpForce);
+            Debug.Log("doing jump");
+            timeSinceJump = 0;
+            pressedJump = false;
             return Vector3.up * jumpForce;
+        }
+        else if (pressedJump && timeSinceJump > 0.1f && yVelocity < jumpForce && !CheckGround())
+        {
+            Debug.Log("doing vault");
+            pressedJump = false;
+            return CalculateVault(yVelocity);
+        }
+
+        pressedJump = false;
+
+        return Vector3.zero;
+    }
+
+    private Vector3 CalculateVault(float yVelocity)
+    {
+        Debug.Log("calculating vault");
+        Debug.DrawRay(vaultLoc1.position, vaultLoc1.forward * vL1Distance);
+        Debug.DrawRay(vaultLoc2.position, vaultLoc2.forward * vL2Distance);
+        if (!CheckGround() && !Physics.Raycast(vaultLoc1.position, vaultLoc1.forward, vL1Distance) && Physics.Raycast(vaultLoc2.position, vaultLoc2.forward, vL2Distance))
+        {
+            Debug.Log("vaulting");
+            GetComponent<CapsuleCollider>().height = 1;
+            StartCoroutine(resetHeight(0.5f));
+            return vaultLoc1.forward * vaultSpeed + new Vector3(0, vaultVerticalSpeed, 0);
         }
 
         return Vector3.zero;
     }
 
+    IEnumerator resetHeight(float time)
+    {
+        
+        yield return new WaitForSeconds(time);
+        GetComponent<CapsuleCollider>().height = 2;
+    }
+
     private bool CheckGround()
     {
-        Ray ray = new Ray(transform.position, Vector3.down);
-        return Physics.Raycast(ray, GetComponent<Collider>().bounds.extents.y + 0.1f);
+        bool onGround = Physics.Raycast(groundCheck.position, -groundCheck.up, 0.1f);
+        animator.SetBool("IsGrounded", onGround);
+        return onGround;
     }
 }
