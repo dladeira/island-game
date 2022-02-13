@@ -1,12 +1,12 @@
 using Mirror;
 using TMPro;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class NetworkRoomPlayerIsland : NetworkBehaviour
 {
     [SyncVar] public bool IsLeader;
     [SyncVar] public int id;
+
     [SyncVar(hook = nameof(HandleDisplayNameChanged))] public string DisplayName = "Player";
 
     [SerializeField] private GameObject canvas;
@@ -24,40 +24,38 @@ public class NetworkRoomPlayerIsland : NetworkBehaviour
         }
     }
 
+    // If this is the player we own then set our name
     public override void OnStartAuthority()
     {
         CmdSetDisplayName(CanvasController.displayName);
-    }
-
-    public override void OnStartClient()
-    {
-        Room.RoomPlayers.Add(this);
-
-        UpdateDisplay();
-    }
-
-    public override void OnStopClient()
-    {
-        Room.RoomPlayers.Remove(this);
-
-        UpdateDisplay();
     }
 
     public void OnLeaveButtonPress()
     {
         if (!isServer)
         {
-            Debug.Log("stopping client");
             Room.StopClient();
         }
         else
         {
-            Debug.Log("stopping server");
             Room.StopHost();
         }
     }
 
-    public void HandleDisplayNameChanged(string oldValue, string newValue) => UpdateDisplay();
+    // This method is called on the client that changes the name
+    public void HandleDisplayNameChanged(string oldValue, string newValue)
+    {
+            // Look for own display
+            foreach (var player in Room.RoomPlayers)
+            {
+                if (player.hasAuthority)
+                {
+                    player.UpdateDisplay();
+                    break;
+                }
+            }
+            return;
+    }
 
     public void StartGame()
     {
@@ -67,29 +65,32 @@ public class NetworkRoomPlayerIsland : NetworkBehaviour
         }
     }
 
+    // Called on every single client that connects
+    public override void OnStartClient()
+    {
+        Room.RoomPlayers.Add(this);
+
+        UpdateDisplay();
+    }
+
+    // Called on every single client that disconnects
+    public override void OnStopClient()
+    {
+        Room.RoomPlayers.Remove(this);
+
+        UpdateDisplay();
+    }
+
     public void UpdateDisplay()
     {
-        // Look for own GUI
+        canvas.SetActive(hasAuthority);
+
         if (!hasAuthority)
         {
-            if (canvas)
-                canvas.SetActive(false);
-            foreach (var player in Room.RoomPlayers)
-            {
-                if (player.hasAuthority)
-                {
-                    player.UpdateDisplay();
-                    break;
-                }
-            }
-
             return;
         }
-        canvas.SetActive(true);
 
         startButton.SetActive(IsLeader);
-
-        Debug.Log("updating display for " + Room.RoomPlayers.Count + " players");
 
         // Clear all names
         for (int i = 0; i < playerNameTexts.Length; i++)

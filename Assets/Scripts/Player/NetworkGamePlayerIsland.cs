@@ -8,80 +8,42 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     [SyncVar] public string displayName;
 
     [Scene] [SerializeField] private string lobbyScene;
-    [SerializeField] private float accel;
-    [SerializeField] private float friction;
-    [SerializeField] private float jumpForce;
 
+    [Header("First Person")]
     [SerializeField] public float sens = 10F;
     [SerializeField] private Transform playerCamera;
 
-    [SerializeField] private Animator animator;
+    [Header("Movement")]
+    [SerializeField] private Rigidbody rb;
+    [SerializeField] private float acceleration;
+    [SerializeField] private float friction;
+    [SerializeField] private float jumpForce;
     [SerializeField] private Transform groundCheck;
 
-    private float minY = -90F;
-    private float maxY = 90F;
-
-    float rotationY = 0F;
-
-    private bool pressedJump = false;
-    private float timeSinceJump = 0;
-
+    [Header("Vaulting")]
     [SerializeField] private Transform vaultLoc1;
     [SerializeField] private Transform vaultLoc2;
+    [SerializeField] private CapsuleCollider capsuleCollider;
     [SerializeField] private float vL1Distance;
     [SerializeField] private float vL2Distance;
     [SerializeField] private float vaultSpeed;
     [SerializeField] private float vaultVerticalSpeed;
 
-    private Rigidbody rb;
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
+
+    // Rotation values
+    private float lookMinY = -90F;
+    private float lookMaxX = 90F;
+
+    float lookYRotation = 0F;
+
+    private bool jumpKeyPressed = false;
+    private float timeSinceJump = 0;
 
     void Start()
     {
         DontDestroyOnLoad(this);
-        rb = GetComponent<Rigidbody>();
-    }
-
-    void Update()
-    {
-        playerCamera.gameObject.SetActive(hasAuthority);
-
-        if (hasAuthority)
-        {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                pressedJump = true;
-            }
-
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                Cursor.lockState = Cursor.lockState == CursorLockMode.None ? CursorLockMode.Locked : CursorLockMode.None;
-            }
-
-            float rotationX = transform.localEulerAngles.y + Input.GetAxis("Mouse X") * sens;
-
-            rotationY += Input.GetAxis("Mouse Y") * sens;
-            rotationY = Mathf.Clamp(rotationY, minY, maxY);
-
-            playerCamera.transform.localEulerAngles = new Vector3(-rotationY, 0, 0);
-            transform.localEulerAngles = new Vector3(0, rotationX, 0);
-        }
-    }
-
-    void FixedUpdate()
-    {
-        timeSinceJump += Time.fixedDeltaTime;
-
-        animator.SetBool("IsRunning", rb.velocity.magnitude > 0.5);
-
-        if (hasAuthority)
-        {
-            Vector3 playerVelocity = rb.velocity;
-
-            playerVelocity = CalculateFriction(playerVelocity);
-            playerVelocity += CalculateMovement(new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")), playerVelocity);
-
-            rb.velocity = playerVelocity;
-        }
     }
 
     void OnEnable()
@@ -94,10 +56,74 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         NetworkManagerIsland.OnClientDisconnected -= ReturnToMainMenu;
     }
 
+    void Update()
+    {
+
+        DoButtons();
+        DoLook();
+        CmdUpdateAnimations(rb.velocity.magnitude > 0.5, jumpKeyPressed, CheckGround());
+    }
+
+    [Command]
+    private void CmdUpdateAnimations(bool isRunning, bool isJumping, bool isGrounded) {
+        RpcUpdateAnimations(isRunning, isJumping, isGrounded);
+    }
+
+    void FixedUpdate()
+    {
+        timeSinceJump += Time.fixedDeltaTime;
+
+        if (hasAuthority)
+        {
+            Vector3 playerVelocity = rb.velocity;
+
+            playerVelocity = CalculateFriction(playerVelocity);
+            playerVelocity += CalculateMovement(new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")), playerVelocity);
+
+            rb.velocity = playerVelocity;
+        }
+    }
+
+    private void DoButtons()
+    {
+        if (hasAuthority)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                jumpKeyPressed = true;
+            }
+
+            // Toggle cursor
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Cursor.lockState = Cursor.lockState == CursorLockMode.None ? CursorLockMode.Locked : CursorLockMode.None;
+            }
+        }
+    }
+
+    private void DoLook()
+    {
+        playerCamera.gameObject.SetActive(hasAuthority);
+        if (hasAuthority)
+        {
+            float rotationX = transform.localEulerAngles.y + Input.GetAxis("Mouse X") * sens;
+
+            lookYRotation += Input.GetAxis("Mouse Y") * sens;
+            lookYRotation = Mathf.Clamp(lookYRotation, lookMinY, lookMaxX);
+
+            playerCamera.transform.localEulerAngles = new Vector3(-lookYRotation, 0, 0);
+            transform.localEulerAngles = new Vector3(0, rotationX, 0);
+        }
+    }
+
     void ReturnToMainMenu()
     {
         SceneManager.LoadScene(lobbyScene);
     }
+
+    // =====
+    // Movement
+    // =====
 
     private Vector3 CalculateFriction(Vector3 currentVelocity)
     {
@@ -113,11 +139,9 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     {
         Vector3 inputVelocity = new Vector3(0, 0, 0);
 
-        animator.SetBool("IsJumping", pressedJump);
-
         if (CheckGround())
         {
-            inputVelocity = Quaternion.Euler(transform.eulerAngles) * new Vector3(input.x * accel, 0f, input.y * accel);
+            inputVelocity = Quaternion.Euler(transform.eulerAngles) * new Vector3(input.x * acceleration, 0f, input.y * acceleration);
         }
         inputVelocity += CalculateJump(inputVelocity.y);
 
@@ -126,34 +150,30 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
     private Vector3 CalculateJump(float yVelocity)
     {
-        if (pressedJump && yVelocity < jumpForce && CheckGround())
+        if (jumpKeyPressed && yVelocity < jumpForce && CheckGround())
         {
-            Debug.Log("doing jump");
             timeSinceJump = 0;
-            pressedJump = false;
+            jumpKeyPressed = false;
             return Vector3.up * jumpForce;
         }
-        else if (pressedJump && timeSinceJump > 0.1f && yVelocity < jumpForce && !CheckGround())
+        else if (jumpKeyPressed && timeSinceJump > 0.1f && yVelocity < jumpForce && !CheckGround())
         {
-            Debug.Log("doing vault");
-            pressedJump = false;
+            jumpKeyPressed = false;
             return CalculateVault(yVelocity);
         }
 
-        pressedJump = false;
+        jumpKeyPressed = false;
 
         return Vector3.zero;
     }
 
     private Vector3 CalculateVault(float yVelocity)
     {
-        Debug.Log("calculating vault");
-        Debug.DrawRay(vaultLoc1.position, vaultLoc1.forward * vL1Distance);
-        Debug.DrawRay(vaultLoc2.position, vaultLoc2.forward * vL2Distance);
+        // Debug.DrawRay(vaultLoc1.position, vaultLoc1.forward * vL1Distance);
+        // Debug.DrawRay(vaultLoc2.position, vaultLoc2.forward * vL2Distance);
         if (!CheckGround() && !Physics.Raycast(vaultLoc1.position, vaultLoc1.forward, vL1Distance) && Physics.Raycast(vaultLoc2.position, vaultLoc2.forward, vL2Distance))
         {
-            Debug.Log("vaulting");
-            GetComponent<CapsuleCollider>().height = 1;
+            capsuleCollider.height = 1;
             StartCoroutine(resetHeight(0.5f));
             return vaultLoc1.forward * vaultSpeed + new Vector3(0, vaultVerticalSpeed, 0);
         }
@@ -163,15 +183,25 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
     IEnumerator resetHeight(float time)
     {
-        
         yield return new WaitForSeconds(time);
-        GetComponent<CapsuleCollider>().height = 2;
+        capsuleCollider.height = 2;
     }
 
     private bool CheckGround()
     {
         bool onGround = Physics.Raycast(groundCheck.position, -groundCheck.up, 0.1f);
-        animator.SetBool("IsGrounded", onGround);
         return onGround;
+    }
+
+    // =====
+    // Animations
+    // =====
+
+    [ClientRpc]
+    private void RpcUpdateAnimations(bool isRunning, bool isJumping, bool isGrounded)
+    {
+        animator.SetBool("IsRunning", isRunning);
+        animator.SetBool("IsJumping", isJumping);
+        animator.SetBool("IsGrounded", isGrounded);
     }
 }
