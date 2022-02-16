@@ -19,6 +19,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     [SerializeField] private float friction;
     [SerializeField] private float jumpForce;
     [SerializeField] private Transform groundCheck;
+    [SerializeField] private Transform groundCrouchCheck;
 
     [Header("Vaulting")]
     [SerializeField] private Transform vaultLoc1;
@@ -39,6 +40,8 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     float lookYRotation = 0F;
 
     private bool jumpKeyPressed = false;
+    private bool isCrouching = false;
+    private float timeSinceCrouch = 0;
     private float timeSinceJump = 0;
 
     void Start()
@@ -61,17 +64,19 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
         DoButtons();
         DoLook();
-        CmdUpdateAnimations(rb.velocity.magnitude > 0.5, jumpKeyPressed, CheckGround());
+        CmdUpdateAnimations(rb.velocity.magnitude > 0.5, jumpKeyPressed, CheckGround(), isCrouching);
     }
 
     [Command]
-    private void CmdUpdateAnimations(bool isRunning, bool isJumping, bool isGrounded) {
-        RpcUpdateAnimations(isRunning, isJumping, isGrounded);
+    private void CmdUpdateAnimations(bool isRunning, bool isJumping, bool isGrounded, bool isCrouching)
+    {
+        RpcUpdateAnimations(isRunning, isJumping, isGrounded, isCrouching);
     }
 
     void FixedUpdate()
     {
         timeSinceJump += Time.fixedDeltaTime;
+        timeSinceCrouch += Time.fixedDeltaTime;
 
         if (hasAuthority)
         {
@@ -98,6 +103,16 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
             {
                 Cursor.lockState = Cursor.lockState == CursorLockMode.None ? CursorLockMode.Locked : CursorLockMode.None;
             }
+
+            if (!isCrouching && Input.GetKey(KeyCode.LeftControl))
+            {
+                transform.position = transform.position - new Vector3(0, 0.5f, 0);
+            }
+            else if (isCrouching && !Input.GetKey(KeyCode.LeftControl))
+            {
+                transform.position = transform.position + new Vector3(0, 0.5f, 0);
+            }
+            isCrouching = Input.GetKey(KeyCode.LeftControl);
         }
     }
 
@@ -131,6 +146,12 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
         if (!CheckGround() || Input.GetKeyDown(KeyCode.Space) || speed == 0) return currentVelocity * (1 - (0.1f * Time.fixedDeltaTime));
 
+        if (isCrouching)
+        {
+            float crouchDrop = speed * 8 * Time.deltaTime;
+            return currentVelocity * (Mathf.Max(speed - crouchDrop, 0f) / speed);
+        }
+
         float drop = speed * friction * Time.deltaTime;
         return currentVelocity * (Mathf.Max(speed - drop, 0f) / speed);
     }
@@ -143,9 +164,34 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         {
             inputVelocity = Quaternion.Euler(transform.eulerAngles) * new Vector3(input.x * acceleration, 0f, input.y * acceleration);
         }
-        inputVelocity += CalculateJump(inputVelocity.y);
+
+        if (isCrouching)
+        {
+            inputVelocity /= 2;
+        }
+
+        inputVelocity += CalculateCrouching(currentVelocity);
+
+        if (!isCrouching)
+        {
+            inputVelocity += CalculateJump(inputVelocity.y);
+        }
 
         return inputVelocity;
+    }
+
+    private Vector3 CalculateCrouching(Vector3 currentVelocity)
+    {
+        if (isCrouching && capsuleCollider.height == 2 && timeSinceCrouch > 1)
+        {
+            timeSinceCrouch = 0;
+
+            if (CheckGround())
+                return currentVelocity * 1.2f;
+        }
+
+        capsuleCollider.height = isCrouching ? 1 : 2;
+        return Vector3.zero;
     }
 
     private Vector3 CalculateJump(float yVelocity)
@@ -189,7 +235,15 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
     private bool CheckGround()
     {
-        bool onGround = Physics.Raycast(groundCheck.position, -groundCheck.up, 0.1f);
+        bool onGround;
+        if (isCrouching)
+        {
+            onGround = Physics.Raycast(groundCrouchCheck.position, -groundCheck.up, 0.1f);
+        }
+        else
+        {
+            onGround = Physics.Raycast(groundCheck.position, -groundCheck.up, 0.1f);
+        }
         return onGround;
     }
 
@@ -198,10 +252,11 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     // =====
 
     [ClientRpc]
-    private void RpcUpdateAnimations(bool isRunning, bool isJumping, bool isGrounded)
+    private void RpcUpdateAnimations(bool isRunning, bool isJumping, bool isGrounded, bool isCrouching)
     {
         animator.SetBool("IsRunning", isRunning);
         animator.SetBool("IsJumping", isJumping);
         animator.SetBool("IsGrounded", isGrounded);
+        animator.SetBool("IsCrouching", isCrouching);
     }
 }
