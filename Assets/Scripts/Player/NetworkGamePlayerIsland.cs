@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Mirror;
+using TMPro;
 
 public class NetworkGamePlayerIsland : NetworkBehaviour
 {
@@ -32,6 +33,12 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
+
+    [Header("Invenotry")]
+    [SerializeField] InventorySystem inventory;
+    [SerializeField] private TMP_Text pickupText;
+    [SerializeField] private float lookDistance;
+    [SerializeField] private LayerMask pickupMask;
 
     // Rotation values
     private float lookMinY = -90F;
@@ -64,6 +71,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
         DoButtons();
         DoLook();
+        DoItemPickup();
         CmdUpdateAnimations(rb.velocity.magnitude > 0.5, jumpKeyPressed, CheckGround(), isCrouching);
     }
 
@@ -264,7 +272,28 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     // Inventory
     // =====
 
-    public void PickupItem() {
-        
+    public void DoItemPickup()
+    {
+        if (hasAuthority)
+        {
+            RaycastHit hit;
+            
+            if (Physics.Raycast(playerCamera.position, playerCamera.forward, out hit, lookDistance, pickupMask))
+            {
+                ItemObject item = hit.transform.GetComponent<ItemObject>();
+                pickupText.transform.gameObject.SetActive(true);
+                pickupText.text = "Pickup '" + item.referenceItem.displayName + "'";
+
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    item.OnHandlePickupItem(inventory);
+                }
+            }
+            else
+            {
+                pickupText.transform.gameObject.SetActive(false);
+            }
+
+        }
     }
 }
