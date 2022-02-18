@@ -259,4 +259,12 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         animator.SetBool("IsGrounded", isGrounded);
         animator.SetBool("IsCrouching", isCrouching);
     }
+
+    // =====
+    // Inventory
+    // =====
+
+    public void PickupItem() {
+        
+    }
 }
