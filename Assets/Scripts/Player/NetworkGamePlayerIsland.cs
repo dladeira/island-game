@@ -36,6 +36,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
     [Header("Invenotry")]
     [SerializeField] InventorySystem inventory;
+    [SerializeField] InventoryManager inventoryManager;
     [SerializeField] private TMP_Text pickupText;
     [SerializeField] private float lookDistance;
     [SerializeField] private LayerMask pickupMask;
@@ -50,9 +51,15 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     private bool isCrouching = false;
     private float timeSinceCrouch = 0;
     private float timeSinceJump = 0;
+    private bool inventoryOpen = false;
 
     void Start()
     {
+        if (hasAuthority)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+        }
+
         DontDestroyOnLoad(this);
     }
 
@@ -68,11 +75,13 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
     void Update()
     {
-
         DoButtons();
         DoLook();
         DoItemPickup();
-        CmdUpdateAnimations(rb.velocity.magnitude > 0.5, jumpKeyPressed, CheckGround(), isCrouching);
+        if (hasAuthority)
+        {
+            CmdUpdateAnimations(rb.velocity.magnitude > 0.5, jumpKeyPressed, CheckGround(), isCrouching);
+        }
     }
 
     [Command]
@@ -106,10 +115,10 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
                 jumpKeyPressed = true;
             }
 
-            // Toggle cursor
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyCode.G) && hasAuthority)
             {
-                Cursor.lockState = Cursor.lockState == CursorLockMode.None ? CursorLockMode.Locked : CursorLockMode.None;
+                inventoryOpen = !inventoryOpen;
+                inventoryManager.ToggleInventory(inventoryOpen);
             }
 
             if (!isCrouching && Input.GetKey(KeyCode.LeftControl))
@@ -127,7 +136,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     private void DoLook()
     {
         playerCamera.gameObject.SetActive(hasAuthority);
-        if (hasAuthority)
+        if (hasAuthority && !inventoryOpen)
         {
             float rotationX = transform.localEulerAngles.y + Input.GetAxis("Mouse X") * sens;
 
@@ -277,7 +286,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         if (hasAuthority)
         {
             RaycastHit hit;
-            
+
             if (Physics.Raycast(playerCamera.position, playerCamera.forward, out hit, lookDistance, pickupMask))
             {
                 ItemObject item = hit.transform.GetComponent<ItemObject>();
@@ -286,7 +295,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
                 if (Input.GetKeyDown(KeyCode.E))
                 {
-                    item.OnHandlePickupItem(inventory);
+                    CmdPickupItem(item, inventory);
                 }
             }
             else
@@ -295,5 +304,22 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
             }
 
         }
+        else
+        {
+            pickupText.transform.gameObject.SetActive(false);
+        }
+    }
+
+    [Command]
+    private void CmdPickupItem(ItemObject item, InventorySystem inventory)
+    {
+        RpcPickupItem(item, inventory);
+    }
+
+    [ClientRpc]
+    private void RpcPickupItem(ItemObject item, InventorySystem inventory)
+    {
+        item.OnHandlePickupItem(inventory);
+
     }
 }

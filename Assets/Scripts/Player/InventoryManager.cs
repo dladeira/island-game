@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 public class InventoryManager : MonoBehaviour
 {
@@ -9,9 +8,17 @@ public class InventoryManager : MonoBehaviour
 
     [SerializeField] private List<InventorySlot> inventorySlots;
 
+    [SerializeField] private GameObject inventoryPanel;
+
     public void Start()
     {
         inventory.onInventoryChangeEvent += DrawInventory;
+        inventoryPanel.SetActive(false);
+    }
+    public void ToggleInventory(bool open)
+    {
+        Cursor.lockState = open ? CursorLockMode.None : CursorLockMode.Locked;
+        inventoryPanel.SetActive(open);
     }
 
     public void DrawInventory()

@@ -1,6 +1,7 @@
 using UnityEngine;
+using Mirror;
 
-public class ItemObject : MonoBehaviour
+public class ItemObject : NetworkBehaviour
 {
     public InventoryItemData referenceItem;
 

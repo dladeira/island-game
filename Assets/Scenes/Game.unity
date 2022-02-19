@@ -202,6 +202,7 @@ GameObject:
   - component: {fileID: 700683005}
   - component: {fileID: 700683004}
   - component: {fileID: 700683003}
+  - component: {fileID: 700683008}
   m_Layer: 8
   m_Name: stick (1)
   m_TagString: Untagged
@@ -234,6 +235,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f752ec393ae705380bac450043154591, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
   referenceItem: {fileID: 11400000, guid: b91a3c42660b0e658900832f7a7c32ca, type: 2}
 --- !u!23 &700683005
 MeshRenderer:
@@ -298,6 +301,23 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &700683008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 700683002}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 3592986488
+  serverOnly: 0
+  visible: 0
+  m_AssetId: 
+  hasSpawned: 0
 --- !u!1 &773630755
 GameObject:
   m_ObjectHideFlags: 0
@@ -311,6 +331,7 @@ GameObject:
   - component: {fileID: 773630758}
   - component: {fileID: 773630757}
   - component: {fileID: 773630756}
+  - component: {fileID: 773630761}
   m_Layer: 8
   m_Name: stick (2)
   m_TagString: Untagged
@@ -343,6 +364,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f752ec393ae705380bac450043154591, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
   referenceItem: {fileID: 11400000, guid: b91a3c42660b0e658900832f7a7c32ca, type: 2}
 --- !u!23 &773630758
 MeshRenderer:
@@ -407,6 +430,23 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &773630761
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 773630755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 2400615771
+  serverOnly: 0
+  visible: 0
+  m_AssetId: 
+  hasSpawned: 0
 --- !u!1 &842217027
 GameObject:
   m_ObjectHideFlags: 0
@@ -608,6 +648,7 @@ GameObject:
   - component: {fileID: 2142610255}
   - component: {fileID: 2142610253}
   - component: {fileID: 2142610254}
+  - component: {fileID: 2142610258}
   m_Layer: 8
   m_Name: stick
   m_TagString: Untagged
@@ -627,6 +668,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f752ec393ae705380bac450043154591, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
   referenceItem: {fileID: 11400000, guid: b91a3c42660b0e658900832f7a7c32ca, type: 2}
 --- !u!135 &2142610254
 SphereCollider:
@@ -704,3 +747,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2142610258
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2142610252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 462439064
+  serverOnly: 0
+  visible: 0
+  m_AssetId: 
+  hasSpawned: 0
