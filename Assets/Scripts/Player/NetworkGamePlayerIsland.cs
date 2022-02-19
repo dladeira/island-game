@@ -17,10 +17,13 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     [Header("Movement")]
     [SerializeField] private Rigidbody rb;
     [SerializeField] private float acceleration;
+    [SerializeField] private float sprintAcceleration;
     [SerializeField] private float friction;
+    [SerializeField] private float airFriction;
     [SerializeField] private float jumpForce;
     [SerializeField] private Transform groundCheck;
     [SerializeField] private Transform groundCrouchCheck;
+    [SerializeField] private LayerMask groundMask;
 
     [Header("Vaulting")]
     [SerializeField] private Transform vaultLoc1;
@@ -52,6 +55,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     private float timeSinceCrouch = 0;
     private float timeSinceJump = 0;
     private bool inventoryOpen = false;
+    private bool isSprinting = false;
 
     void Start()
     {
@@ -78,6 +82,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         DoButtons();
         DoLook();
         DoItemPickup();
+
         if (hasAuthority)
         {
             CmdUpdateAnimations(rb.velocity.magnitude > 0.5, jumpKeyPressed, CheckGround(), isCrouching);
@@ -115,10 +120,19 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
                 jumpKeyPressed = true;
             }
 
-            if (Input.GetKeyDown(KeyCode.G) && hasAuthority)
+            if (Input.GetKeyDown(KeyCode.G))
             {
                 inventoryOpen = !inventoryOpen;
                 inventoryManager.ToggleInventory(inventoryOpen);
+            }
+
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                isSprinting = true;
+            }
+            if (Input.GetKeyUp(KeyCode.LeftShift))
+            {
+                isSprinting = false;
             }
 
             if (!isCrouching && Input.GetKey(KeyCode.LeftControl))
@@ -161,7 +175,11 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     {
         float speed = currentVelocity.magnitude;
 
-        if (!CheckGround() || Input.GetKeyDown(KeyCode.Space) || speed == 0) return currentVelocity * (1 - (0.1f * Time.fixedDeltaTime));
+        if (!CheckGround() || Input.GetKeyDown(KeyCode.Space) || speed == 0)
+        {
+            float jumpDrop = speed * airFriction * Time.deltaTime;
+            return currentVelocity * (Mathf.Max(speed - jumpDrop, 0f) / speed);
+        }
 
         if (isCrouching)
         {
@@ -179,7 +197,9 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
         if (CheckGround())
         {
-            inputVelocity = Quaternion.Euler(transform.eulerAngles) * new Vector3(input.x * acceleration, 0f, input.y * acceleration);
+            float accl = isSprinting ? sprintAcceleration : acceleration;
+            // Only allow sprinting forward
+            inputVelocity = Quaternion.Euler(transform.eulerAngles) * new Vector3(input.x * acceleration, 0f, input.y * (input.y > 0 ? accl : acceleration));
         }
 
         if (isCrouching)
@@ -255,11 +275,11 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         bool onGround;
         if (isCrouching)
         {
-            onGround = Physics.Raycast(groundCrouchCheck.position, -groundCheck.up, 0.1f);
+            onGround = Physics.CheckBox(groundCrouchCheck.position, new Vector3(0.5f, 0.09f, 0.5f), Quaternion.Euler(0, 0, 0), groundMask);
         }
         else
         {
-            onGround = Physics.Raycast(groundCheck.position, -groundCheck.up, 0.1f);
+            onGround = Physics.CheckBox(groundCheck.position, new Vector3(0.15f, 0.09f, 0.15f), Quaternion.Euler(0, 0, 0), groundMask);
         }
         return onGround;
     }
