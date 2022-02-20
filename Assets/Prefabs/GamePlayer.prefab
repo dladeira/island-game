@@ -181,8 +181,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -384.11853, y: -602.8946}
-  m_SizeDelta: {x: 688.2371, y: 779.7892}
+  m_AnchoredPosition: {x: -380, y: -550}
+  m_SizeDelta: {x: 690, y: 780}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2499176350617357804
 MonoBehaviour:
@@ -731,6 +731,7 @@ MonoBehaviour:
   groundMask:
     serializedVersion: 2
     m_Bits: 55
+  ignoreCollisions: 08000000
   vaultLoc1: {fileID: 7865268352800094570}
   vaultLoc2: {fileID: 8208263628740805207}
   capsuleCollider: {fileID: 2184334446818441784}
@@ -1192,11 +1193,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UiScaleMode: 0
+  m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
-  m_ScreenMatchMode: 0
+  m_ReferenceResolution: {x: 1920, y: 1080}
+  m_ScreenMatchMode: 2
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96

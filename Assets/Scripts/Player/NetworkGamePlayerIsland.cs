@@ -24,6 +24,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     [SerializeField] private Transform groundCheck;
     [SerializeField] private Transform groundCrouchCheck;
     [SerializeField] private LayerMask groundMask;
+    [SerializeField] private int[] ignoreCollisions;
 
     [Header("Vaulting")]
     [SerializeField] private Transform vaultLoc1;
@@ -65,6 +66,11 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         }
 
         DontDestroyOnLoad(this);
+
+        for (int i = 0; i < ignoreCollisions.Length; i++)
+        {
+            Physics.IgnoreLayerCollision(gameObject.layer, ignoreCollisions[i]);
+        }
     }
 
     void OnEnable()
@@ -107,7 +113,8 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
             playerVelocity = CalculateFriction(playerVelocity);
             playerVelocity += CalculateMovement(new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")), playerVelocity);
 
-            rb.velocity = playerVelocity;
+            if (playerVelocity.normalized.magnitude > 0)
+                rb.velocity = playerVelocity;
         }
     }
 
