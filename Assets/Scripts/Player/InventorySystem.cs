@@ -18,7 +18,6 @@ public class InventorySystem : NetworkBehaviour
 
     public void Add(InventoryItemData referenceData)
     {
-        Debug.Log("adding a item");
         InventoryItem itemStack = Get(referenceData);
         if (itemStack != null)
         {

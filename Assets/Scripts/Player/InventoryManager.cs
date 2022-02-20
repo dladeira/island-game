@@ -13,6 +13,7 @@ public class InventoryManager : MonoBehaviour
     public void Start()
     {
         inventory.onInventoryChangeEvent += DrawInventory;
+        DrawInventory();
         inventoryPanel.SetActive(false);
     }
     public void ToggleInventory(bool open)
@@ -24,9 +25,18 @@ public class InventoryManager : MonoBehaviour
     public void DrawInventory()
     {
         int index = 0;
-        foreach (InventoryItem item in inventory.inventory)
+
+        foreach (InventorySlot slot in inventorySlots)
         {
-            inventorySlots.ToArray()[index].Set(item);
+            if (inventory.inventory.Count > index)
+            {
+                InventoryItem item = inventory.inventory.ToArray()[index];
+                slot.Set(item);
+            }
+            else
+            {
+                slot.Set(null);
+            }
             index++;
         }
     }
