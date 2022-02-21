@@ -1,26 +1,31 @@
-using System.Collections;
-using System.Collections.Generic;
 using System;
-using UnityEngine;
-using UnityEditor;
 using Mirror;
 
+// <summary>Class used to store a stack of items in the player's inventory (called itemStack in Minecraft)</summary>
 [Serializable]
 public class InventoryItem
 {
+    // <summary>The item type that is being stored</summary>
     public InventoryItemData data { get; private set; }
+
+    // <summary>The quantity of that item</summary>
     public int stackSize { get; private set; }
 
-    public InventoryItem(InventoryItemData source) {
+    // <summary>Create a new inventoryItem with a stack size of 1</summary>
+    public InventoryItem(InventoryItemData source)
+    {
         data = source;
         AddToStack();
     }
 
-    public InventoryItem(InventoryItemData source, int count) {
+    // <summary>Create a new inventoryItem with predefined stack size</summary>
+    public InventoryItem(InventoryItemData source, int count)
+    {
         data = source;
         AddToStack(count);
     }
-    
+
+    // <summary>Add a item to the stack</summary>
     public void AddToStack()
     {
         stackSize++;
@@ -31,15 +36,20 @@ public class InventoryItem
         stackSize += count;
     }
 
+    // <summary>Remove a item from the stack</summary>
     public void RemoveFromStack()
     {
         stackSize--;
     }
 
-    
+    public void RemoveFromStack(int count)
+    {
+        stackSize -= count;
+    }
 }
 
-public static class InventoryItemReadWriteFunctions 
+// <summary>A extension class used for serialization/deserialization over Mirror (network)</summary>
+public static class InventoryItemReadWriteFunctions
 {
     public static void WriteMyType(this NetworkWriter writer, InventoryItem item)
     {
