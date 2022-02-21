@@ -38,9 +38,8 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     [Header("Animation")]
     [SerializeField] private Animator animator;
 
-    [Header("Invenotry")]
+    [Header("Inventory")]
     [SerializeField] InventorySystem inventory;
-    [SerializeField] InventoryManager inventoryManager;
     [SerializeField] private TMP_Text pickupText;
     [SerializeField] private float lookDistance;
     [SerializeField] private LayerMask pickupMask;
@@ -130,7 +129,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
             if (Input.GetKeyDown(KeyCode.G))
             {
                 inventoryOpen = !inventoryOpen;
-                inventoryManager.ToggleInventory(inventoryOpen);
+                inventory.ToggleInventory(inventoryOpen);
             }
 
             if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -337,16 +336,39 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         }
     }
 
+    public void DropItem(string itemID)
+    {
+        CmdDropItem(itemID, playerCamera.position + (playerCamera.forward * 0.2f) - (playerCamera.up * 0.2f), inventory);
+    }
+
     [Command]
     private void CmdPickupItem(ItemObject item, InventorySystem inventory)
     {
         RpcPickupItem(item, inventory);
     }
 
+    
+
+    [Command]
+    private void CmdDropItem(string itemId, Vector3 position, InventorySystem inventory)
+    {
+        ItemObject itemObject = (NetworkManager.singleton as NetworkManagerIsland).GetItemObject(itemId);
+        ItemObject spawnedItem = Instantiate(itemObject, position, Quaternion.Euler(0, 0, 0));
+        NetworkServer.Spawn(spawnedItem.gameObject);
+
+        RpcDropItem(itemId);
+    }
+
     [ClientRpc]
     private void RpcPickupItem(ItemObject item, InventorySystem inventory)
     {
         item.OnHandlePickupItem(inventory);
+    }
 
+    [ClientRpc]
+    private void RpcDropItem(string itemId)
+    {
+        InventoryItemData item = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId);
+        inventory.Remove(item);
     }
 }

@@ -12,8 +12,6 @@ public class NetworkManagerIsland : NetworkManager
         LOBBY, PLAYING
     }
 
-    public static new NetworkManagerIsland singleton;
-
     [Header("Config")]
     [Scene] [SerializeField] private string lobbyScene;
     [Scene] [SerializeField] private string gameScene;
@@ -22,6 +20,10 @@ public class NetworkManagerIsland : NetworkManager
     [Header("Prefabs")]
     [SerializeField] private NetworkRoomPlayerIsland roomPlayerPrefab;
     [SerializeField] private NetworkGamePlayerIsland gamePlayerPrefab;
+
+    [Header("Items")]
+    [SerializeField] private List<ItemObject> itemObjects;
+    [SerializeField] private List<InventoryItemData> itemDatas;
 
     public static event Action OnClientConnected;
     public static event Action OnClientDisconnected;
@@ -50,11 +52,11 @@ public class NetworkManagerIsland : NetworkManager
             return;
         }
 
-        if (SceneManager.GetActiveScene().path != lobbyScene)
-        {
-            conn.Disconnect();
-            return;
-        }
+        // if (SceneManager.GetActiveScene().path != lobbyScene)
+        // {
+        //     conn.Disconnect();
+        //     return;
+        // }
     }
 
     public override void OnServerAddPlayer(NetworkConnection conn)
@@ -67,6 +69,13 @@ public class NetworkManagerIsland : NetworkManager
 
             NetworkServer.AddPlayerForConnection(conn, roomPlayer.gameObject);
             SendPlayerList();
+        }
+        else if (SceneManager.GetActiveScene().path == gameScene)
+        {
+            NetworkGamePlayerIsland playerInstance = Instantiate(gamePlayerPrefab, new Vector3(10, 10, 10), Quaternion.Euler(0, 0, 0));
+            playerInstance.displayName = ("FAILED");
+            NetworkServer.ReplacePlayerForConnection(conn, playerInstance.gameObject);
+            GamePlayers.Add(playerInstance);
         }
     }
 
@@ -145,5 +154,32 @@ public class NetworkManagerIsland : NetworkManager
         }
 
         base.ServerChangeScene(newSceneName);
+    }
+
+    public ItemObject GetItemObject(string itemId)
+    {
+        for (int i = 0; i < itemDatas.Count; i++)
+        {
+            if (itemDatas[i].id == itemId)
+            {
+                return itemObjects[i];
+            }
+        }
+
+        return null;
+    }
+
+    public InventoryItemData IdToItem(string itemId)
+    {
+        for (int i = 0; i < itemDatas.Count; i++)
+        {
+            if (itemDatas[i].id == itemId)
+            {
+                return itemDatas[i];
+
+            }
+        }
+
+        return null;
     }
 }

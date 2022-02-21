@@ -436,7 +436,6 @@ MonoBehaviour:
   lobbyObj: {fileID: 1666547730}
   nameInput: {fileID: 1150130123}
   nameLockBtn: {fileID: 262337365}
-  networkManager: {fileID: 1251230821}
 --- !u!1 &262337363
 GameObject:
   m_ObjectHideFlags: 0
@@ -1522,10 +1521,18 @@ MonoBehaviour:
   spawnPrefabs:
   - {fileID: 1168341053583958997, guid: 6dc65d8b78143d52fae33f46ea8451bf, type: 3}
   - {fileID: 6019103102172592656, guid: 58a4749aa4c4496ff84d933f4783672f, type: 3}
+  - {fileID: 7365466378420543742, guid: 3199d6462a113c19d8c4c58abcd6f71a, type: 3}
+  - {fileID: 3393651960553259844, guid: a8463d8bca8f586fc8059278d9699d94, type: 3}
   lobbyScene: Assets/Scenes/Menu.unity
   gameScene: Assets/Scenes/Game.unity
   roomPlayerPrefab: {fileID: 6089913168278772603, guid: 6dc65d8b78143d52fae33f46ea8451bf, type: 3}
   gamePlayerPrefab: {fileID: 6019103102172592661, guid: 58a4749aa4c4496ff84d933f4783672f, type: 3}
+  itemObjects:
+  - {fileID: 625740507, guid: 3199d6462a113c19d8c4c58abcd6f71a, type: 3}
+  - {fileID: 144087872444756932, guid: a8463d8bca8f586fc8059278d9699d94, type: 3}
+  itemDatas:
+  - {fileID: 11400000, guid: b91a3c42660b0e658900832f7a7c32ca, type: 2}
+  - {fileID: 11400000, guid: 636b78a8bd8facc5596f65e25520ae38, type: 2}
 --- !u!4 &1251230822
 Transform:
   m_ObjectHideFlags: 0

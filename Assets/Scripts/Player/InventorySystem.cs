@@ -5,19 +5,66 @@ using Mirror;
 
 public class InventorySystem : NetworkBehaviour
 {
-    private Dictionary<InventoryItemData, InventoryItem> m_itemDictionary;
-    public List<InventoryItem> inventory { get; private set; }
+    [SerializeField] private NetworkGamePlayerIsland player;
+    [SerializeField] private List<InventorySlot> inventorySlots;
+    [SerializeField] private GameObject inventoryPanel;
+
+    public List<InventoryItem> inventory = new List<InventoryItem>();
+
+    public List<InventoryItem> editorInventory = new List<InventoryItem>();
 
     public event Action onInventoryChangeEvent;
 
     private void Awake()
     {
-        inventory = new List<InventoryItem>();
-        m_itemDictionary = new Dictionary<InventoryItemData, InventoryItem>();
+
+        onInventoryChangeEvent += DrawInventory;
+        onInventoryChangeEvent?.Invoke();
+
+        ToggleInventory(false);
     }
 
-    public void Add(InventoryItemData referenceData)
+    private void DrawInventory()
     {
+        Debug.Log("inventory changed of player " + player.displayName);
+        int index = 0;
+
+        foreach (InventorySlot slot in inventorySlots)
+        {
+            if (inventory.Count > index)
+            {
+                InventoryItem item = inventory[index];
+                slot.Set(item, player);
+            }
+            else
+            {
+                slot.Set(null, null);
+            }
+            index++;
+        }
+
+        editorInventory.Clear();
+
+        foreach (InventoryItem item in inventory)
+        {
+            editorInventory.Add(item);
+        }
+    }
+
+    public void Add(InventoryItemData reference)
+    {
+        CmdAdd(reference.id);
+    }
+
+    public void Remove(InventoryItemData reference)
+    {
+        CmdRemove(reference.id);
+    }
+
+    public void CmdAdd(string itemId)
+    {
+        InventoryItemData referenceData = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId);
+
         InventoryItem itemStack = Get(referenceData);
         if (itemStack != null)
         {
@@ -27,14 +74,15 @@ public class InventorySystem : NetworkBehaviour
         {
             InventoryItem newItem = new InventoryItem(referenceData);
             inventory.Add(newItem);
-            m_itemDictionary.Add(referenceData, newItem);
         }
 
         onInventoryChangeEvent?.Invoke();
     }
 
-    public void Remove(InventoryItemData referenceData)
+    public void CmdRemove(string itemId)
     {
+        InventoryItemData referenceData = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId);
+
         InventoryItem itemStack = Get(referenceData);
         if (itemStack != null)
         {
@@ -43,7 +91,6 @@ public class InventorySystem : NetworkBehaviour
             if (itemStack.stackSize == 0)
             {
                 inventory.Remove(itemStack);
-                m_itemDictionary.Remove(referenceData);
             }
         }
 
@@ -52,10 +99,22 @@ public class InventorySystem : NetworkBehaviour
 
     public InventoryItem Get(InventoryItemData referenceData)
     {
-        if (m_itemDictionary.TryGetValue(referenceData, out InventoryItem value))
+        for (var i = 0; i < inventory.Count; i++)
         {
-            return value;
+            InventoryItem item = inventory[i];
+
+            if (item.data.id == referenceData.id)
+            {
+                return item;
+            }
         }
+
         return null;
+    }
+
+    public void ToggleInventory(bool open)
+    {
+        Cursor.lockState = open ? CursorLockMode.None : CursorLockMode.Locked;
+        inventoryPanel.SetActive(open);
     }
 }
