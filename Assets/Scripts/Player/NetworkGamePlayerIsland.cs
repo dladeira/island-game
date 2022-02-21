@@ -350,7 +350,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     [Command]
     private void CmdDropItem(string itemId, Vector3 position, InventorySystem inventory)
     {
-        ItemObject itemObject = (NetworkManager.singleton as NetworkManagerIsland).GetItemObject(itemId);
+        ItemObject itemObject = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId).itemObjectPrefab.GetComponent<ItemObject>();
         ItemObject spawnedItem = Instantiate(itemObject, position, Quaternion.Euler(0, 0, 0));
         NetworkServer.Spawn(spawnedItem.gameObject);
 

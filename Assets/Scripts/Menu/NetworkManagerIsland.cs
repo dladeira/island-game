@@ -25,7 +25,6 @@ public class NetworkManagerIsland : NetworkManager
     [SerializeField] private NetworkGamePlayerIsland gamePlayerPrefab;
 
     [Header("Items")]
-    [SerializeField] private List<ItemObject> itemObjects;
     [SerializeField] private List<InventoryItemData> itemDatas;
 
     public static event Action OnClientConnected;
@@ -153,19 +152,6 @@ public class NetworkManagerIsland : NetworkManager
         }
 
         base.ServerChangeScene(newSceneName);
-    }
-
-    public ItemObject GetItemObject(string itemId)
-    {
-        for (int i = 0; i < itemDatas.Count; i++)
-        {
-            if (itemDatas[i].id == itemId)
-            {
-                return itemObjects[i];
-            }
-        }
-
-        return null;
     }
 
     public InventoryItemData IdToItem(string itemId)

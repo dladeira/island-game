@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using Mirror;
@@ -10,14 +8,14 @@ public class InventoryItemData : ScriptableObject
     public string id;
     public string displayName;
     public Sprite icon;
-    public GameObject prefab;
+    public GameObject itemObjectPrefab;
 
     public void SetValues(string id, string displayName, string iconPath, GameObject prefab)
     {
         this.id = id;
         this.displayName = displayName;
         this.icon = AssetDatabase.LoadAssetAtPath<Sprite>(iconPath);
-        this.prefab = prefab;
+        this.itemObjectPrefab = prefab;
     }
 }
 
@@ -28,7 +26,7 @@ public static class InventoryItemDataReadWriteFunctions
         writer.WriteString(value.id);
         writer.WriteString(value.displayName);
         writer.WriteString(AssetDatabase.GetAssetPath(value.icon));
-        writer.WriteGameObject(value.prefab);
+        writer.WriteGameObject(value.itemObjectPrefab);
     }
 
     public static InventoryItemData ReadMyType(this NetworkReader reader)
