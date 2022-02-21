@@ -11,13 +11,10 @@ public class InventorySystem : NetworkBehaviour
 
     public List<InventoryItem> inventory = new List<InventoryItem>();
 
-    public List<InventoryItem> editorInventory = new List<InventoryItem>();
-
     public event Action onInventoryChangeEvent;
 
-    private void Awake()
+    private void Start()
     {
-
         onInventoryChangeEvent += DrawInventory;
         onInventoryChangeEvent?.Invoke();
 
@@ -26,28 +23,23 @@ public class InventorySystem : NetworkBehaviour
 
     private void DrawInventory()
     {
-        Debug.Log("inventory changed of player " + player.displayName);
-        int index = 0;
-
-        foreach (InventorySlot slot in inventorySlots)
+        if (hasAuthority) // Only draw our own inventory
         {
-            if (inventory.Count > index)
-            {
-                InventoryItem item = inventory[index];
-                slot.Set(item, player);
-            }
-            else
-            {
-                slot.Set(null, null);
-            }
-            index++;
-        }
+            int index = 0;
 
-        editorInventory.Clear();
-
-        foreach (InventoryItem item in inventory)
-        {
-            editorInventory.Add(item);
+            foreach (InventorySlot slot in inventorySlots)
+            {
+                if (inventory.Count > index)
+                {
+                    InventoryItem item = inventory[index];
+                    slot.Set(item, player);
+                }
+                else
+                {
+                    slot.Set(null, null);
+                }
+                index++;
+            }
         }
     }
 

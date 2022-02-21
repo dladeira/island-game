@@ -27,7 +27,7 @@ public class NetworkRoomPlayerIsland : NetworkBehaviour
     // If this is the player we own then set our name
     public override void OnStartAuthority()
     {
-        CmdSetDisplayName(CanvasController.displayName);
+        CmdSetDisplayName(Canvas_NameInput.displayName);
     }
 
     public void OnLeaveButtonPress()

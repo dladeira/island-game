@@ -1,31 +1,50 @@
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
+using Mirror;
 
+// <summary>State manager for the main menu of the game</summary>
 public class CanvasController : MonoBehaviour
 {
-    public enum Menu
+
+    public static CanvasController Instance { get; private set; }
+
+    // <summary>Different states of the menu</summary>
+    public enum MenuState
     {
-        NameInput, MainMenu, Lobby
+        // <summary>The player is forced to input their name</summary>
+        NameInput = 0,
+        // <summary>The player can host and connect to games</summary>
+        MainMenu = 1,
+        // <summary>The player is connected to a game and awaiting start</summary>
+        Lobby = 2
     }
 
-    [SerializeField] private GameObject nameInputObj;
-    [SerializeField] private GameObject mainMenuObj;
-    [SerializeField] private GameObject lobbyObj;
+    [SerializeField] private List<GameObject> menuStateObjects;
 
-    [Header("NameLock")]
-    [SerializeField] private TMP_InputField nameInput;
-    [SerializeField] private Button nameLockBtn;
-
-    [SerializeField] private NetworkManagerIsland networkManager
+    private NetworkManagerIsland networkManager
     {
         get
         {
-            return GameObject.Find("NetworkManager").GetComponent<NetworkManagerIsland>();
+            return NetworkManager.singleton as NetworkManagerIsland;
         }
     }
 
-    public static string displayName { get; private set; }
+    public void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            Instance = this;
+        }
+    }
+
+    public void Start()
+    {
+        SetMenu(MenuState.NameInput);
+    }
 
     public void OnEnable()
     {
@@ -39,69 +58,31 @@ public class CanvasController : MonoBehaviour
         NetworkManagerIsland.OnClientDisconnected -= HandleClientDisconnected;
     }
 
-    public void Start()
-    {
-        SetMenu(Menu.NameInput);
-        UpdateNameButton();
-    }
-
     public void HandleClientConnected()
     {
-        SetMenu(Menu.Lobby);
+        SetMenu(MenuState.Lobby);
     }
 
     public void HandleClientDisconnected()
     {
-        SetMenu(Menu.MainMenu);
+        SetMenu(MenuState.MainMenu);
     }
 
-    // ==== NameInput
-
-    public void UpdateNameButton()
+    public void SetMenu(MenuState menu)
     {
-        nameLockBtn.interactable = !string.IsNullOrWhiteSpace(nameInput.text);
-    }
+        int index = (int)menu;
 
-    public void LockPlayerName()
-    {
-        displayName = nameInput.text;
-        SetMenu(Menu.MainMenu);
-    }
-
-    // ==== MainMenu
-
-    public void OnHostButtonPress()
-    {
-        networkManager.StartHost();
-        SetMenu(Menu.Lobby);
-    }
-
-    public void OnJoinButtonPress()
-    {
-        networkManager.networkAddress = "localhost";
-        networkManager.StartClient();
-        SetMenu(Menu.Lobby);
-    }
-
-    public void SetMenu(Menu menu)
-    {
-        switch (menu)
+        // Hide all menuStateObjects except for the current one
+        for (int i = 0; i < menuStateObjects.Count; i++)
         {
-            case Menu.NameInput:
-                nameInputObj.SetActive(true);
-                mainMenuObj.SetActive(false);
-                lobbyObj.SetActive(false);
-                return;
-            case Menu.MainMenu:
-                nameInputObj.SetActive(false);
-                mainMenuObj.SetActive(true);
-                lobbyObj.SetActive(false);
-                return;
-            case Menu.Lobby:
-                nameInputObj.SetActive(false);
-                mainMenuObj.SetActive(false);
-                lobbyObj.SetActive(true);
-                return;
+            if (i == index)
+            {
+                menuStateObjects[i].SetActive(true);
+            }
+            else
+            {
+                menuStateObjects[i].SetActive(false);
+            }
         }
     }
 }

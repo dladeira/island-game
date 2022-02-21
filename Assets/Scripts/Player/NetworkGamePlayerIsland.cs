@@ -347,8 +347,6 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         RpcPickupItem(item, inventory);
     }
 
-    
-
     [Command]
     private void CmdDropItem(string itemId, Vector3 position, InventorySystem inventory)
     {

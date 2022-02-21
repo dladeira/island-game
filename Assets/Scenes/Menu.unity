@@ -132,6 +132,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1512523}
+  - component: {fileID: 1512524}
   m_Layer: 5
   m_Name: MainMenu
   m_TagString: Untagged
@@ -160,6 +161,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1512524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1512522}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e9e65388d87ded2282c9361dfa1b058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  joinButton: {fileID: 1428400254}
 --- !u!1 &145098737
 GameObject:
   m_ObjectHideFlags: 0
@@ -431,11 +445,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72a420c4c5771e140b7f68817e2d432c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nameInputObj: {fileID: 312011872}
-  mainMenuObj: {fileID: 1512522}
-  lobbyObj: {fileID: 1666547730}
-  nameInput: {fileID: 1150130123}
-  nameLockBtn: {fileID: 262337365}
+  menuStateObjects:
+  - {fileID: 312011872}
+  - {fileID: 1512522}
+  - {fileID: 1666547730}
 --- !u!1 &262337363
 GameObject:
   m_ObjectHideFlags: 0
@@ -449,7 +462,7 @@ GameObject:
   - component: {fileID: 262337366}
   - component: {fileID: 262337365}
   m_Layer: 5
-  m_Name: LockName
+  m_Name: Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -519,9 +532,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 220676736}
-        m_TargetAssemblyTypeName: CanvasController, Assembly-CSharp
-        m_MethodName: LockPlayerName
+      - m_Target: {fileID: 312011874}
+        m_TargetAssemblyTypeName: Canvas_NameInput, Assembly-CSharp
+        m_MethodName: LockName
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -578,6 +591,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 312011873}
+  - component: {fileID: 312011874}
   m_Layer: 5
   m_Name: NameInput
   m_TagString: Untagged
@@ -606,6 +620,20 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &312011874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 312011872}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4109f5c4b936fe0a98e6680e411a11a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  input: {fileID: 1150130123}
+  button: {fileID: 262337365}
 --- !u!1 &708577908
 GameObject:
   m_ObjectHideFlags: 0
@@ -1073,7 +1101,7 @@ GameObject:
   - component: {fileID: 1150130124}
   - component: {fileID: 1150130123}
   m_Layer: 5
-  m_Name: NameField
+  m_Name: NameInput
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1179,9 +1207,9 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 220676736}
-        m_TargetAssemblyTypeName: CanvasController, Assembly-CSharp
-        m_MethodName: UpdateNameButton
+      - m_Target: {fileID: 312011874}
+        m_TargetAssemblyTypeName: Canvas_NameInput, Assembly-CSharp
+        m_MethodName: UpdateButton
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1396,8 +1424,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 220676736}
-        m_TargetAssemblyTypeName: CanvasController, Assembly-CSharp
+      - m_Target: {fileID: 1512524}
+        m_TargetAssemblyTypeName: Canvas_MainMenu, Assembly-CSharp
         m_MethodName: OnHostButtonPress
         m_Mode: 1
         m_Arguments:
@@ -1746,8 +1774,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 220676736}
-        m_TargetAssemblyTypeName: CanvasController, Assembly-CSharp
+      - m_Target: {fileID: 1512524}
+        m_TargetAssemblyTypeName: Canvas_MainMenu, Assembly-CSharp
         m_MethodName: OnJoinButtonPress
         m_Mode: 1
         m_Arguments:
@@ -1988,7 +2016,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Enter text...
+  m_text: Username
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
