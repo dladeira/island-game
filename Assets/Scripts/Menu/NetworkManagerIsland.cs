@@ -6,16 +6,19 @@ using UnityEngine.SceneManagement;
 
 public class NetworkManagerIsland : NetworkManager
 {
-    // TODO: PLAYER GETS STUCK WHEN TRYING TO JOIN GAME THAT ALREADY STARTED
+    // <summary>The state of the game</summary>
     public enum GameState
     {
-        LOBBY, PLAYING
+        // <summary>The lobby phase</summary>
+        LOBBY,
+        // <summary>The game has started and people are playing</summary>
+        PLAYING
     }
 
     [Header("Config")]
     [Scene] [SerializeField] private string lobbyScene;
     [Scene] [SerializeField] private string gameScene;
-    [SerializeField] public static int maxPlayers = 4;
+    [SerializeField] public static int maxPlayers = 4; // TODO Create username fields in the lobby dynamically based upon max player count
 
     [Header("Prefabs")]
     [SerializeField] private NetworkRoomPlayerIsland roomPlayerPrefab;
@@ -51,12 +54,6 @@ public class NetworkManagerIsland : NetworkManager
             conn.Disconnect();
             return;
         }
-
-        // if (SceneManager.GetActiveScene().path != lobbyScene)
-        // {
-        //     conn.Disconnect();
-        //     return;
-        // }
     }
 
     public override void OnServerAddPlayer(NetworkConnection conn)
@@ -73,8 +70,10 @@ public class NetworkManagerIsland : NetworkManager
         else if (SceneManager.GetActiveScene().path == gameScene)
         {
             NetworkGamePlayerIsland playerInstance = Instantiate(gamePlayerPrefab, new Vector3(10, 10, 10), Quaternion.Euler(0, 0, 0));
+            NetworkServer.Spawn(playerInstance.gameObject);
             playerInstance.displayName = ("FAILED");
-            NetworkServer.ReplacePlayerForConnection(conn, playerInstance.gameObject);
+            Debug.Log(conn.connectionId);
+            NetworkServer.AddPlayerForConnection(conn, playerInstance.gameObject);
             GamePlayers.Add(playerInstance);
         }
     }
