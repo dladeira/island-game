@@ -15,4 +15,4 @@ MonoBehaviour:
   id: InventoryItem_Leaf
   displayName: Leaf
   icon: {fileID: 21300000, guid: 9d01679c49b2cc813b568dd4f3a3a5a1, type: 3}
-  prefab: {fileID: 0}
+  itemObjectPrefab: {fileID: 7365466378420543742, guid: 3199d6462a113c19d8c4c58abcd6f71a, type: 3}
