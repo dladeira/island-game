@@ -186,6 +186,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd89fc5d7970e80229d1aa0e4c37b85e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  itemToMove: {fileID: 7233338397999608269}
+  canvasGroup: {fileID: 5699457826951337150}
   text: {fileID: 8062735507085192122}
   counter: {fileID: 9032276762875389110}
   image: {fileID: 4358241133928984739}
@@ -275,6 +277,7 @@ GameObject:
   - component: {fileID: 7233338397999608269}
   - component: {fileID: 9145281960856666964}
   - component: {fileID: 4358241133928984739}
+  - component: {fileID: 5699457826951337150}
   m_Layer: 0
   m_Name: Image
   m_TagString: Untagged
@@ -339,6 +342,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &5699457826951337150
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5308026558263842892}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &6714944135853613642
 GameObject:
   m_ObjectHideFlags: 0
