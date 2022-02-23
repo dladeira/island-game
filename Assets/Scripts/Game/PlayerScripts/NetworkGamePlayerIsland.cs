@@ -16,12 +16,13 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     [SerializeField] private Animator animator;
 
     [Header("Inventory")]
-    [SerializeField] PlayerInventory inventory;
+    [SerializeField] public PlayerInventory inventory;
     [SerializeField] private TMP_Text pickupText;
     [SerializeField] private float lookDistance;
     [SerializeField] private LayerMask pickupMask;
 
     [SerializeField] private Transform playerCamera;
+    [SerializeField] public Canvas canvas;
 
     bool inventoryOpen = false;
 
@@ -158,6 +159,6 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     private void RpcDropItem(string itemId)
     {
         InventoryItemData item = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId);
-        inventory.Remove(item);
+        inventory.Remove(item, 1);
     }
 }

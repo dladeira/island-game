@@ -7,7 +7,7 @@ public class ItemObject : NetworkBehaviour
 
     public void OnHandlePickupItem(PlayerInventory inventory)
     {
-        inventory.Add(referenceItem);
+        inventory.Add(referenceItem, 1);
         Destroy(gameObject);
     }
 }

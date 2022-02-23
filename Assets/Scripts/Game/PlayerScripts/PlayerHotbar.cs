@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-public class PlayerInventory : NetworkBehaviour, IGameInventory
+public class PlayerHotbar : NetworkBehaviour, IGameInventory
 {
     [SerializeField] private NetworkGamePlayerIsland player;
     [SerializeField] private List<InventorySlot> inventorySlots;
@@ -18,7 +18,7 @@ public class PlayerInventory : NetworkBehaviour, IGameInventory
         onInventoryChangeEvent += DrawInventory;
         onInventoryChangeEvent?.Invoke();
 
-        ToggleInventory(false);
+        inventoryPanel.SetActive(true);
     }
 
     private void DrawInventory()
@@ -102,11 +102,5 @@ public class PlayerInventory : NetworkBehaviour, IGameInventory
         }
 
         return null;
-    }
-
-    public void ToggleInventory(bool open)
-    {
-        Cursor.lockState = open ? CursorLockMode.None : CursorLockMode.Locked;
-        inventoryPanel.SetActive(open);
     }
 }
