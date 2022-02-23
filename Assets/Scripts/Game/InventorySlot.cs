@@ -41,10 +41,11 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
         }
         else
         {
+            this.item = null;
+
             text.text = "";
             counter.text = "";
             image.enabled = false;
-            item = null;
         }
     }
 
@@ -67,11 +68,8 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (item != null)
-        {
-            itemToMove.anchoredPosition = new Vector2(0, 0);
-            canvasGroup.blocksRaycasts = true;
-        }
+        itemToMove.anchoredPosition = new Vector2(0, 0);
+        canvasGroup.blocksRaycasts = true;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -92,9 +90,10 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
         if (sourceSlot)
         {
             InventoryItem draggedItem = sourceSlot.item;
+            int count = draggedItem.stackSize; // Use in seperate variable because stackSize is affected when removing items
 
-            inventory.Add(draggedItem.data, draggedItem.stackSize, id);
-            sourceSlot.inventory.Remove(draggedItem.data, draggedItem.stackSize);
+            sourceSlot.inventory.Remove(draggedItem.data, count);
+            inventory.Add(draggedItem.data, count, id);
         }
     }
 }
