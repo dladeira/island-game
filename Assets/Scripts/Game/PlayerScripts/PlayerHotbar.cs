@@ -8,8 +8,9 @@ public class PlayerHotbar : NetworkBehaviour, IGameInventory
     [SerializeField] private NetworkGamePlayerIsland player;
     [SerializeField] private List<InventorySlot> inventorySlots;
     [SerializeField] private GameObject inventoryPanel;
+    [SerializeField] private int inventorySize;
 
-    public List<InventoryItem> inventory = new List<InventoryItem>();
+    public Dictionary<int, InventoryItem> inventory = new Dictionary<int, InventoryItem>();
 
     public event Action onInventoryChangeEvent;
 
@@ -29,71 +30,86 @@ public class PlayerHotbar : NetworkBehaviour, IGameInventory
 
             foreach (InventorySlot slot in inventorySlots)
             {
-                if (inventory.Count > index)
+                if (inventory.ContainsKey(index))
                 {
                     InventoryItem item = inventory[index];
-                    slot.Set(item, player, this);
+                    slot.Set(item, player, this, index);
                 }
                 else
                 {
-                    slot.Set(null, player, this);
+                    slot.Set(null, player, this, index);
                 }
                 index++;
             }
         }
     }
 
-    public void Add(InventoryItemData reference, int count)
+    public string GetName()
     {
-        CmdAdd(reference.id);
+        return "PlayerHotbar";
     }
 
-    public void Remove(InventoryItemData reference, int count)
+    public bool Add(InventoryItemData reference, int count)
     {
-        CmdRemove(reference.id);
+        return CmdAdd(reference.id, count, inventory.Count);
     }
 
-    public void CmdAdd(string itemId)
+    public bool Add(InventoryItemData reference, int count, int slotId)
     {
+        return CmdAdd(reference.id, count, slotId);
+    }
+
+    public bool Remove(InventoryItemData reference, int count)
+    {
+        CmdRemove(reference.id, count);
+        return true;
+    }
+
+    public bool CmdAdd(string itemId, int count, int slotId)
+    {
+        if (inventory.Count >= inventorySize)
+            return false;
+
         InventoryItemData referenceData = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId);
 
-        InventoryItem itemStack = Get(referenceData);
+        InventoryItem itemStack = GetInventoryItem(referenceData);
         if (itemStack != null)
         {
-            itemStack.AddToStack();
+            itemStack.AddToStack(count);
         }
         else
         {
-            InventoryItem newItem = new InventoryItem(referenceData);
-            inventory.Add(newItem);
+            InventoryItem newItem = new InventoryItem(referenceData, count);
+            inventory.Add(slotId, newItem);
         }
 
         onInventoryChangeEvent?.Invoke();
+        return true;
     }
 
-    public void CmdRemove(string itemId)
+    public void CmdRemove(string itemId, int count)
     {
         InventoryItemData referenceData = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId);
 
-        InventoryItem itemStack = Get(referenceData);
+        InventoryItem itemStack = GetInventoryItem(referenceData);
         if (itemStack != null)
         {
-            itemStack.RemoveFromStack();
+            itemStack.RemoveFromStack(count);
 
-            if (itemStack.stackSize == 0)
+            if (itemStack.stackSize <= 0)
             {
-                inventory.Remove(itemStack);
+                inventory.Remove(GetInventoryItemIndex(referenceData));
             }
         }
 
         onInventoryChangeEvent?.Invoke();
     }
 
-    public InventoryItem Get(InventoryItemData referenceData)
+    public InventoryItem GetInventoryItem(InventoryItemData referenceData)
     {
-        for (var i = 0; i < inventory.Count; i++)
+        foreach (KeyValuePair<int, InventoryItem> kvp in inventory)
         {
-            InventoryItem item = inventory[i];
+            InventoryItem item = kvp.Value;
 
             if (item.data.id == referenceData.id)
             {
@@ -102,5 +118,20 @@ public class PlayerHotbar : NetworkBehaviour, IGameInventory
         }
 
         return null;
+    }
+
+    public int GetInventoryItemIndex(InventoryItemData referenceData)
+    {
+        foreach (KeyValuePair<int, InventoryItem> kvp in inventory)
+        {
+            InventoryItem item = kvp.Value;
+
+            if (item.data.id == referenceData.id)
+            {
+                return kvp.Key;
+            }
+        }
+
+        return -1;
     }
 }

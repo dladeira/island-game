@@ -8,6 +8,7 @@ public class PlayerInventory : NetworkBehaviour, IGameInventory
     [SerializeField] private NetworkGamePlayerIsland player;
     [SerializeField] private List<InventorySlot> inventorySlots;
     [SerializeField] private GameObject inventoryPanel;
+    [SerializeField] private int inventorySize;
 
     public List<InventoryItem> inventory = new List<InventoryItem>();
 
@@ -43,44 +44,59 @@ public class PlayerInventory : NetworkBehaviour, IGameInventory
         }
     }
 
-    public void Add(InventoryItemData reference, int count)
+    public string GetName()
     {
-        CmdAdd(reference.id);
+        return "PlayerInventory";
     }
 
-    public void Remove(InventoryItemData reference, int count)
+    public bool Add(InventoryItemData reference, int count)
     {
-        CmdRemove(reference.id);
+        return CmdAdd(reference.id, count);
     }
 
-    public void CmdAdd(string itemId)
+    public bool Add(InventoryItemData reference, int count, int slotId)
     {
+        return  CmdAdd(reference.id, count);
+    }
+
+    public bool Remove(InventoryItemData reference, int count)
+    {
+        CmdRemove(reference.id, count);
+        return true;
+    }
+
+    public bool CmdAdd(string itemId, int count)
+    {
+        if (inventory.Count >= inventorySize)
+            return false;
+
         InventoryItemData referenceData = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId);
 
-        InventoryItem itemStack = Get(referenceData);
+        InventoryItem itemStack = GetInventoryItem(referenceData);
         if (itemStack != null)
         {
-            itemStack.AddToStack();
+            itemStack.AddToStack(count);
         }
         else
         {
-            InventoryItem newItem = new InventoryItem(referenceData);
+            InventoryItem newItem = new InventoryItem(referenceData, count);
             inventory.Add(newItem);
         }
 
         onInventoryChangeEvent?.Invoke();
+        return true;
     }
 
-    public void CmdRemove(string itemId)
+    public void CmdRemove(string itemId, int count)
     {
         InventoryItemData referenceData = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId);
 
-        InventoryItem itemStack = Get(referenceData);
+        InventoryItem itemStack = GetInventoryItem(referenceData);
         if (itemStack != null)
         {
-            itemStack.RemoveFromStack();
+            itemStack.RemoveFromStack(count);
 
-            if (itemStack.stackSize == 0)
+            if (itemStack.stackSize <= 0)
             {
                 inventory.Remove(itemStack);
             }
@@ -89,7 +105,7 @@ public class PlayerInventory : NetworkBehaviour, IGameInventory
         onInventoryChangeEvent?.Invoke();
     }
 
-    public InventoryItem Get(InventoryItemData referenceData)
+    public InventoryItem GetInventoryItem(InventoryItemData referenceData)
     {
         for (var i = 0; i < inventory.Count; i++)
         {
@@ -100,7 +116,6 @@ public class PlayerInventory : NetworkBehaviour, IGameInventory
                 return item;
             }
         }
-
         return null;
     }
 

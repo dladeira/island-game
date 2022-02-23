@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
-public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerDownHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IDropHandler
+public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IDropHandler
 {
     private Canvas canvas;
     [SerializeField] private RectTransform itemToMove;
@@ -16,12 +16,19 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerDownHa
     public NetworkGamePlayerIsland player;
     public InventoryItem item;
     public IGameInventory inventory;
+    public int id;
 
     public void Set(InventoryItem item, NetworkGamePlayerIsland player, IGameInventory sourceInventory)
+    {
+        Set(item, player, sourceInventory, 0);
+    }
+
+    public void Set(InventoryItem item, NetworkGamePlayerIsland player, IGameInventory sourceInventory, int id)
     {
         this.player = player;
         this.inventory = sourceInventory;
         this.canvas = player.canvas;
+        this.id = id;
 
         if (item != null)
         {
@@ -37,6 +44,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerDownHa
             text.text = "";
             counter.text = "";
             image.enabled = false;
+            item = null;
         }
     }
 
@@ -44,20 +52,14 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerDownHa
     {
         if (item != null && eventData.button == PointerEventData.InputButton.Right)
         {
-            player.DropItem(item.data.id);
+            player.DropItem(item.data.id, inventory);
         }
-    }
-
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        Debug.Log("OnPointerDown");
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (item != null)
         {
-            Debug.Log("OnBeginDrag");
             canvasGroup.alpha = 0.6f;
             canvasGroup.blocksRaycasts = false;
         }
@@ -67,7 +69,6 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerDownHa
     {
         if (item != null)
         {
-            Debug.Log("OnEndDrag");
             itemToMove.anchoredPosition = new Vector2(0, 0);
             canvasGroup.blocksRaycasts = true;
         }
@@ -77,7 +78,6 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerDownHa
     {
         if (item != null)
         {
-            Debug.Log("OnDrag");
             canvasGroup.alpha = 1;
             itemToMove.anchoredPosition += eventData.delta / canvas.scaleFactor;
         }
@@ -86,16 +86,15 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerDownHa
 
     public void OnDrop(PointerEventData eventData)
     {
-        Debug.Log("OnDrop");
-        GameObject item = eventData.pointerDrag;
-        InventorySlot sourceSlot = item.GetComponent<InventorySlot>();
-        InventoryItem draggedItem = sourceSlot.item;
+        GameObject movingItem = eventData.pointerDrag;
+        InventorySlot sourceSlot = movingItem.GetComponent<InventorySlot>();
 
         if (sourceSlot)
         {
-            Debug.Log(sourceSlot.player.name);
-            sourceSlot.inventory.Remove(draggedItem.data, 1);
-            inventory.Add(draggedItem.data, 1);
+            InventoryItem draggedItem = sourceSlot.item;
+
+            inventory.Add(draggedItem.data, draggedItem.stackSize, id);
+            sourceSlot.inventory.Remove(draggedItem.data, draggedItem.stackSize);
         }
     }
 }

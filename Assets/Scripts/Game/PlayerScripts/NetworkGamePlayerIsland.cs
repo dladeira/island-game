@@ -16,6 +16,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     [SerializeField] private Animator animator;
 
     [Header("Inventory")]
+    [SerializeField] public PlayerHotbar hotbar;
     [SerializeField] public PlayerInventory inventory;
     [SerializeField] private TMP_Text pickupText;
     [SerializeField] private float lookDistance;
@@ -128,9 +129,9 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         }
     }
 
-    public void DropItem(string itemID)
+    public void DropItem(string itemID, IGameInventory inventory)
     {
-        CmdDropItem(itemID, playerCamera.position + (playerCamera.forward * 0.2f) - (playerCamera.up * 0.2f), inventory);
+        CmdDropItem(itemID, playerCamera.position + (playerCamera.forward * 0.2f) - (playerCamera.up * 0.2f), inventory.GetName());
     }
 
     [Command]
@@ -140,13 +141,13 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     }
 
     [Command]
-    private void CmdDropItem(string itemId, Vector3 position, PlayerInventory inventory)
+    private void CmdDropItem(string itemId, Vector3 position, string inventoryName)
     {
         ItemObject itemObject = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId).itemObjectPrefab.GetComponent<ItemObject>();
         ItemObject spawnedItem = Instantiate(itemObject, position, Quaternion.Euler(0, 0, 0));
         NetworkServer.Spawn(spawnedItem.gameObject);
 
-        RpcDropItem(itemId);
+        RpcDropItem(itemId, inventoryName);
     }
 
     [ClientRpc]
@@ -156,9 +157,17 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void RpcDropItem(string itemId)
+    private void RpcDropItem(string itemId, string inventoryName)
     {
         InventoryItemData item = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId);
-        inventory.Remove(item, 1);
+        switch (inventoryName)
+        {
+            case "PlayerInventory":
+                inventory.Remove(item, 1);
+                break;
+            case "PlayerHotbar":
+                hotbar.Remove(item, 1);
+                break;
+        }
     }
 }

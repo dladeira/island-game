@@ -1,5 +1,7 @@
 public interface IGameInventory
 {
-    public void Add(InventoryItemData reference, int count);
-    public void Remove(InventoryItemData reference, int count);
+    public bool Add(InventoryItemData reference, int count);
+    public bool Add(InventoryItemData reference, int count, int slotId);
+    public bool Remove(InventoryItemData reference, int count);
+    public string GetName();
 }

@@ -798,6 +798,7 @@ MonoBehaviour:
   lobbyScene: Assets/Scenes/Menu.unity
   movement: {fileID: 5358619720134275193}
   animator: {fileID: 3259932032544739082}
+  hotbar: {fileID: 8832036918772785461}
   inventory: {fileID: 2207639868457377379}
   pickupText: {fileID: 8585154595841612908}
   lookDistance: 5
@@ -865,6 +866,7 @@ MonoBehaviour:
   - {fileID: 1633807713889344981}
   - {fileID: 3395769629022899167}
   inventoryPanel: {fileID: 3426932537369809313}
+  inventorySize: 42
   inventory: []
 --- !u!95 &4964020725134754943
 Animator:
@@ -1009,7 +1011,7 @@ MonoBehaviour:
   - {fileID: 2270235562094632744}
   - {fileID: 7295342268881860991}
   inventoryPanel: {fileID: 1830113257025366389}
-  inventory: []
+  inventorySize: 5
 --- !u!1 &6061748540203883633
 GameObject:
   m_ObjectHideFlags: 0
