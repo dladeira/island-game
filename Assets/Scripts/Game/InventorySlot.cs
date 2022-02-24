@@ -16,7 +16,10 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
     public NetworkGamePlayerIsland player;
     public InventoryItem item;
     public IGameInventory inventory;
+    public InventoryRecipeData recipe;
     public int id;
+    public bool interactable;
+    public bool crafting;
 
     public void Set(InventoryItem item, NetworkGamePlayerIsland player, IGameInventory sourceInventory)
     {
@@ -29,6 +32,36 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
         this.inventory = sourceInventory;
         this.canvas = player.canvas;
         this.id = id;
+        this.interactable = true;
+        this.crafting = false;
+
+        if (item != null)
+        {
+            this.item = item;
+
+            text.text = item.data.displayName;
+            counter.text = item.stackSize.ToString();
+            image.enabled = true;
+            image.sprite = item.data.icon;
+        }
+        else
+        {
+            this.item = null;
+
+            text.text = "";
+            counter.text = "";
+            image.enabled = false;
+        }
+    }
+
+    public void Set(InventoryItem item, NetworkGamePlayerIsland player, int test, bool interactable, InventoryRecipeData recipe)
+    {
+        this.canvas = player.canvas;
+        this.interactable = interactable;
+        this.crafting = true;
+        this.recipe = recipe;
+        this.player = player;
+
 
         if (item != null)
         {
@@ -51,15 +84,19 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (item != null && eventData.button == PointerEventData.InputButton.Right)
+        if (item != null && eventData.button == PointerEventData.InputButton.Right && interactable)
         {
             player.DropItem(item.data.id, inventory);
+        }
+        else if (crafting && recipe != null)
+        {
+            player.CraftItem(recipe);
         }
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (item != null)
+        if (item != null && interactable)
         {
             canvasGroup.alpha = 0.6f;
             canvasGroup.blocksRaycasts = false;
@@ -68,13 +105,16 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        itemToMove.anchoredPosition = new Vector2(0, 0);
-        canvasGroup.blocksRaycasts = true;
+        if (interactable)
+        {
+            itemToMove.anchoredPosition = new Vector2(0, 0);
+            canvasGroup.blocksRaycasts = true;
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (item != null)
+        if (item != null && interactable)
         {
             canvasGroup.alpha = 1;
             itemToMove.anchoredPosition += eventData.delta / canvas.scaleFactor;
@@ -87,7 +127,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
         GameObject movingItem = eventData.pointerDrag;
         InventorySlot sourceSlot = movingItem.GetComponent<InventorySlot>();
 
-        if (sourceSlot)
+        if (sourceSlot && interactable)
         {
             InventoryItem draggedItem = sourceSlot.item;
             int count = draggedItem.stackSize; // Use in seperate variable because stackSize is affected when removing items

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Mirror;
@@ -131,7 +132,17 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
     public void DropItem(string itemID, IGameInventory inventory)
     {
-        CmdDropItem(itemID, playerCamera.position + (playerCamera.forward * 0.2f) - (playerCamera.up * 0.2f), inventory.GetName());
+        CmdDropItem(itemID, playerCamera.position + (playerCamera.forward * 0.2f) - (playerCamera.up * 0.2f), inventory.GetName(), true);
+    }
+
+    public void DropItem(string itemID, IGameInventory inventory, bool drop)
+    {
+        CmdDropItem(itemID, playerCamera.position + (playerCamera.forward * 0.2f) - (playerCamera.up * 0.2f), inventory.GetName(), drop);
+    }
+
+    public void CraftItem(InventoryRecipeData data)
+    {
+        CmdCraftItem(data);
     }
 
     [Command]
@@ -141,11 +152,20 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     }
 
     [Command]
-    private void CmdDropItem(string itemId, Vector3 position, string inventoryName)
+    private void CmdCraftItem(InventoryRecipeData data)
     {
-        ItemObject itemObject = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId).itemObjectPrefab.GetComponent<ItemObject>();
-        ItemObject spawnedItem = Instantiate(itemObject, position, Quaternion.Euler(0, 0, 0));
-        NetworkServer.Spawn(spawnedItem.gameObject);
+        RpcCraftItem(data);
+    }
+
+    [Command]
+    private void CmdDropItem(string itemId, Vector3 position, string inventoryName, bool drop)
+    {
+        if (drop)
+        {
+            ItemObject itemObject = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId).itemObjectPrefab.GetComponent<ItemObject>();
+            ItemObject spawnedItem = Instantiate(itemObject, position, Quaternion.Euler(0, 0, 0));
+            NetworkServer.Spawn(spawnedItem.gameObject);
+        }
 
         RpcDropItem(itemId, inventoryName);
     }
@@ -168,6 +188,29 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
             case "PlayerHotbar":
                 hotbar.Remove(item, 1);
                 break;
+        }
+    }
+
+    [ClientRpc]
+    private void RpcCraftItem(InventoryRecipeData data)
+    {
+        List<InventoryItemData> itemsToRemove = data.input;
+
+        for (int removeIndex = 0; removeIndex < itemsToRemove.Count; removeIndex++)
+        {
+            if (inventory.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
+            {
+                itemsToRemove.RemoveAt(removeIndex);
+            }
+            else if (hotbar.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
+            {
+                itemsToRemove.RemoveAt(removeIndex);
+            }
+        }
+
+        for (int addIndex = 0; addIndex < data.output.Count; addIndex++)
+        {
+            inventory.Add(data.output[addIndex], data.outputAmount[addIndex]);
         }
     }
 }
