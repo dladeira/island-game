@@ -4,7 +4,7 @@ using UnityEditor;
 using System.Linq;
 using Mirror;
 
-[CreateAssetMenu(menuName= "Recipe Item data")]
+[CreateAssetMenu(menuName = "Recipe Item data")]
 public class InventoryRecipeData : ScriptableObject
 {
     public List<InventoryItemData> input;
@@ -19,36 +19,87 @@ public class InventoryRecipeData : ScriptableObject
         this.output = output;
         this.outputAmount = outputAmount;
     }
-
-    public void Set(InventoryItemData input, int inputAmount, InventoryItemData output, int outputAmount)
-    {
-        this.input = new List<InventoryItemData>();
-        this.input.Add(input);
-        this.inputAmount = new List<int>();
-        this.inputAmount.Add(inputAmount);
-
-        this.output = new List<InventoryItemData>();
-        this.output.Add(output);
-        this.outputAmount = new List<int>();
-        this.outputAmount.Add(outputAmount);
-    }
 }
 
 // <summary>A extension class used for serialization/deserialization over Mirror (network)</summary>
-public static class InventoryRecipeDataReadWriteFunctions 
+public static class InventoryRecipeDataReadWriteFunctions
 {
     public static void WriteMyType(this NetworkWriter writer, InventoryRecipeData value)
     {
-        writer.Write<InventoryItemData>(value.input.ToArray()[0]);
-        writer.Write<int>(value.inputAmount.ToArray()[0]);
-        writer.Write<InventoryItemData>(value.output.ToArray()[0]);
-        writer.Write<int>(value.outputAmount.ToArray()[0]);
+        WriteArray(writer, value.input);
+        WriteArray(writer, value.inputAmount);
+        WriteArray(writer, value.output);
+        WriteArray(writer, value.outputAmount);
     }
 
     public static InventoryRecipeData ReadMyType(this NetworkReader reader)
     {
         InventoryRecipeData data = ScriptableObject.CreateInstance("InventoryRecipeData") as InventoryRecipeData;
-        data.Set(reader.Read<InventoryItemData>(), reader.Read<int>(), reader.Read<InventoryItemData>(), reader.Read<int>());
+        data.Set(ReadRecipes(reader), ReadIntegers(reader), ReadRecipes(reader), ReadIntegers(reader));
         return data;
+    }
+
+    public static List<InventoryItemData> ReadRecipes(NetworkReader reader)
+    {
+        List<InventoryItemData> data = new List<InventoryItemData>();
+
+        for (int i = 0; i < 3; i++)
+        {
+            InventoryItemData read = reader.Read<InventoryItemData>();
+            if (read.id != "Empty")
+            {
+                data.Add(read);
+            }
+        }
+
+        return data;
+    }
+
+    public static List<int> ReadIntegers(NetworkReader reader)
+    {
+        List<int> data = new List<int>();
+
+        for (int i = 0; i < 3; i++)
+        {
+            int read = reader.Read<int>();
+            if (read > 0)
+            {
+                data.Add(read);
+            }
+        }
+
+        return data;
+    }
+
+    public static void WriteArray(NetworkWriter writer, List<InventoryItemData> data)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            if (i < data.Count)
+            {
+                writer.Write<InventoryItemData>(data.ToArray()[i]);
+            }
+            else
+            {
+                InventoryItemData empty = ScriptableObject.CreateInstance("InventoryItemData") as InventoryItemData;
+                empty.SetValues("Empty", "Empty", null, null);
+                writer.Write<InventoryItemData>(empty);
+            }
+        }
+    }
+
+    public static void WriteArray(NetworkWriter writer, List<int> data)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            if (i < data.Count)
+            {
+                writer.Write<int>(data.ToArray()[i]);
+            }
+            else
+            {
+                writer.Write<int>(-1);
+            }
+        }
     }
 }

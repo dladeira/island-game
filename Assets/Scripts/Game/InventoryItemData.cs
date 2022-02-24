@@ -1,9 +1,10 @@
+using System;
 using UnityEngine;
 using UnityEditor;
 using Mirror;
 
 // <summary>Class used to store hardcoded item values and the types of items in the game</summary
-[CreateAssetMenu(menuName= "Inventory Item Data")]
+[CreateAssetMenu(menuName = "Inventory Item Data")]
 public class InventoryItemData : ScriptableObject
 {
     // <summary>The name code uses to identify the object</summary>
@@ -29,7 +30,7 @@ public class InventoryItemData : ScriptableObject
 }
 
 // <summary>A extension class used for serialization/deserialization over Mirror (network)</summary>
-public static class InventoryItemDataReadWriteFunctions 
+public static class InventoryItemDataReadWriteFunctions
 {
     public static void WriteMyType(this NetworkWriter writer, InventoryItemData value)
     {

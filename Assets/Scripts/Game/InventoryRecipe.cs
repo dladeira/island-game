@@ -10,7 +10,7 @@ public class InventoryRecipe : MonoBehaviour
     [SerializeField] private GameObject ItemSlotPrefab;
     [SerializeField] private NetworkGamePlayerIsland player;
 
-    void OnEnable()
+    void Start()
     {
         int index = 0;
         foreach (InventoryItemData item in data.input)

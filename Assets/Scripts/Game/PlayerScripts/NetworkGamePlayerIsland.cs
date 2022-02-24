@@ -195,8 +195,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     private void RpcCraftItem(InventoryRecipeData data)
     {
         List<InventoryItemData> itemsToRemove = data.input;
-
-        for (int removeIndex = 0; removeIndex < itemsToRemove.Count; removeIndex++)
+        for (int removeIndex = data.inputAmount.Count - 1; removeIndex >= 0; removeIndex--)
         {
             if (inventory.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
             {
