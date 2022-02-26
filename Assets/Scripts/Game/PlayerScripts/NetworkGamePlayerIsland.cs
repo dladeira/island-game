@@ -204,7 +204,6 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
         for (int haveIndex = data.input.Count - 1; haveIndex >= 0; haveIndex--)
         {
-            Debug.Log("checking if player has " + data.input[haveIndex].displayName);
             if (inventory.Has(data.input[haveIndex], data.inputAmount[haveIndex]))
             {
                 itemsToHave.RemoveAt(haveIndex);
@@ -218,12 +217,8 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
         if (itemsToHave.Count <= 0)
         {
-            Debug.Log("player has required items");
-            Debug.Log("datainput length: " + data.input.Count);
-            Debug.Log("items to remove length:" + itemsToRemove.Count);
             for (int removeIndex = data.input.Count - 1; removeIndex >= 0; removeIndex--)
             {
-                Debug.Log("removing " + data.input[removeIndex].displayName);
                 if (inventory.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
                 {
                     itemsToRemove.RemoveAt(removeIndex);
@@ -233,7 +228,6 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
                     itemsToRemove.RemoveAt(removeIndex);
                 }
             }
-            Debug.Log("all items removd");
             for (int addIndex = 0; addIndex < data.output.Count; addIndex++)
             {
                 Debug.Log("adding " + data.output[addIndex]);
