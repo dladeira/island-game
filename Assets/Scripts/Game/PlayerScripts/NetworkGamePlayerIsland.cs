@@ -19,6 +19,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     [Header("Inventory")]
     [SerializeField] public PlayerHotbar hotbar;
     [SerializeField] public PlayerInventory inventory;
+    [SerializeField] public PlayerCrafting crafting;
     [SerializeField] private TMP_Text pickupText;
     [SerializeField] private float lookDistance;
     [SerializeField] private LayerMask pickupMask;
@@ -72,7 +73,11 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
             if (Input.GetKeyDown(KeyCode.G))
             {
                 inventoryOpen = !inventoryOpen;
+
+                Cursor.lockState = inventoryOpen ? CursorLockMode.None : CursorLockMode.Locked;
+
                 inventory.ToggleInventory(inventoryOpen);
+                crafting.ToggleOpen(inventoryOpen);
                 movement.ToggleMovement(!inventoryOpen);
                 movement.ToggleLook(!inventoryOpen);
             }
@@ -194,22 +199,46 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     [ClientRpc]
     private void RpcCraftItem(InventoryRecipeData data)
     {
-        List<InventoryItemData> itemsToRemove = data.input;
-        for (int removeIndex = data.inputAmount.Count - 1; removeIndex >= 0; removeIndex--)
+        List<InventoryItemData> itemsToRemove = new List<InventoryItemData>(data.input);
+        List<InventoryItemData> itemsToHave = new List<InventoryItemData>(data.input);
+
+        for (int haveIndex = data.input.Count - 1; haveIndex >= 0; haveIndex--)
         {
-            if (inventory.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
+            Debug.Log("checking if player has " + data.input[haveIndex].displayName);
+            if (inventory.Has(data.input[haveIndex], data.inputAmount[haveIndex]))
             {
-                itemsToRemove.RemoveAt(removeIndex);
+                itemsToHave.RemoveAt(haveIndex);
             }
-            else if (hotbar.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
+            else if (hotbar.Has(data.input[haveIndex], data.inputAmount[haveIndex]))
             {
-                itemsToRemove.RemoveAt(removeIndex);
+                itemsToHave.RemoveAt(haveIndex);
             }
         }
 
-        for (int addIndex = 0; addIndex < data.output.Count; addIndex++)
+
+        if (itemsToHave.Count <= 0)
         {
-            inventory.Add(data.output[addIndex], data.outputAmount[addIndex]);
+            Debug.Log("player has required items");
+            Debug.Log("datainput length: " + data.input.Count);
+            Debug.Log("items to remove length:" + itemsToRemove.Count);
+            for (int removeIndex = data.input.Count - 1; removeIndex >= 0; removeIndex--)
+            {
+                Debug.Log("removing " + data.input[removeIndex].displayName);
+                if (inventory.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
+                {
+                    itemsToRemove.RemoveAt(removeIndex);
+                }
+                else if (hotbar.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
+                {
+                    itemsToRemove.RemoveAt(removeIndex);
+                }
+            }
+            Debug.Log("all items removd");
+            for (int addIndex = 0; addIndex < data.output.Count; addIndex++)
+            {
+                Debug.Log("adding " + data.output[addIndex]);
+                inventory.Add(data.output[addIndex], data.outputAmount[addIndex]);
+            }
         }
     }
 }

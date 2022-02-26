@@ -14,7 +14,7 @@ public class PlayerInventory : NetworkBehaviour, IGameInventory
 
     public event Action onInventoryChangeEvent;
 
-    private void Start()
+    void Start()
     {
         onInventoryChangeEvent += DrawInventory;
         onInventoryChangeEvent?.Invoke();
@@ -56,13 +56,27 @@ public class PlayerInventory : NetworkBehaviour, IGameInventory
 
     public bool Add(InventoryItemData reference, int count, int slotId)
     {
-        return  CmdAdd(reference.id, count);
+        return CmdAdd(reference.id, count);
     }
 
     public bool Remove(InventoryItemData reference, int count)
     {
         CmdRemove(reference.id, count);
         return true;
+    }
+
+    public bool Has(InventoryItemData reference, int count)
+    {
+
+        InventoryItem itemStack = GetInventoryItem(reference);
+        if (itemStack != null)
+        {
+            return itemStack.stackSize >= count;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public bool CmdAdd(string itemId, int count)
@@ -121,7 +135,6 @@ public class PlayerInventory : NetworkBehaviour, IGameInventory
 
     public void ToggleInventory(bool open)
     {
-        Cursor.lockState = open ? CursorLockMode.None : CursorLockMode.Locked;
         inventoryPanel.SetActive(open);
     }
 }

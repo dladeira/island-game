@@ -65,6 +65,20 @@ public class PlayerHotbar : NetworkBehaviour, IGameInventory
         return true;
     }
 
+    public bool Has(InventoryItemData reference, int count)
+    {
+
+        InventoryItem itemStack = GetInventoryItem(reference);
+        if (itemStack != null)
+        {
+            return itemStack.stackSize >= count;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     public bool CmdAdd(string itemId, int count, int slotId)
     {
         if (inventory.Count >= inventorySize)
