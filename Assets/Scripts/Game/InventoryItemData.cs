@@ -19,6 +19,11 @@ public class InventoryItemData : ScriptableObject
     // <summary>The prefab to use when spawning the item as a object (in game)</summary
     public GameObject itemObjectPrefab;
 
+    public GameObject holdingItem;
+
+    public Vector3 holdingOffset;
+    public Vector3 holdingRotation;
+
     // <summary>Set the values for the itemData, used for deserialization</summary>
     public void SetValues(string id, string displayName, string iconPath, GameObject prefab)
     {

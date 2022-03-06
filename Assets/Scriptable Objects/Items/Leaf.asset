@@ -16,3 +16,6 @@ MonoBehaviour:
   displayName: Leaf
   icon: {fileID: 21300000, guid: 9d01679c49b2cc813b568dd4f3a3a5a1, type: 3}
   itemObjectPrefab: {fileID: 7365466378420543742, guid: 3199d6462a113c19d8c4c58abcd6f71a, type: 3}
+  holdingItem: {fileID: 3516133041779850618, guid: bc51a219098d3bac1852a8ce6a1924da, type: 3}
+  holdingOffset: {x: 0, y: 0, z: 0}
+  holdingRotation: {x: 0, y: 0, z: 0}

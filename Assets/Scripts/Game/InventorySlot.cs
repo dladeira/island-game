@@ -12,6 +12,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
     [SerializeField] private TMP_Text text;
     [SerializeField] private TMP_Text counter;
     [SerializeField] private Image image;
+    [SerializeField] private Image selectedImage;
 
     public NetworkGamePlayerIsland player;
     public InventoryItem item;
@@ -23,10 +24,10 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
 
     public void Set(InventoryItem item, NetworkGamePlayerIsland player, IGameInventory sourceInventory)
     {
-        Set(item, player, sourceInventory, 0);
+        Set(item, player, sourceInventory, 0, false);
     }
 
-    public void Set(InventoryItem item, NetworkGamePlayerIsland player, IGameInventory sourceInventory, int id)
+    public void Set(InventoryItem item, NetworkGamePlayerIsland player, IGameInventory sourceInventory, int id, bool selected)
     {
         this.player = player;
         this.inventory = sourceInventory;
@@ -34,6 +35,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
         this.id = id;
         this.interactable = true;
         this.crafting = false;
+        this.selectedImage.gameObject.SetActive(selected);
 
         if (item != null)
         {
@@ -61,6 +63,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
         this.crafting = true;
         this.recipe = recipe;
         this.player = player;
+        this.selectedImage.gameObject.SetActive(false);
 
 
         if (item != null)

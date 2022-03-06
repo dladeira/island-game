@@ -2,13 +2,24 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
-
+using UnityEditor.Animations;
+using UnityEngine.Animations.Rigging;
 public class PlayerHotbar : NetworkBehaviour, IGameInventory
 {
     [SerializeField] private NetworkGamePlayerIsland player;
     [SerializeField] private List<InventorySlot> inventorySlots;
     [SerializeField] private GameObject inventoryPanel;
     [SerializeField] private int inventorySize;
+    [SerializeField] private GameObject holdingParent;
+    private GameObject holding;
+    private int equippedItem = 1;
+    [SerializeField] private Rig holdingRig;
+
+    public Transform leftGrip;
+    public Transform rightGrip;
+
+    [SerializeField] Animator anim;
+    AnimatorOverrideController overrides;
 
     public Dictionary<int, InventoryItem> inventory = new Dictionary<int, InventoryItem>();
 
@@ -19,7 +30,39 @@ public class PlayerHotbar : NetworkBehaviour, IGameInventory
         onInventoryChangeEvent += DrawInventory;
         onInventoryChangeEvent?.Invoke();
 
+        overrides = anim.runtimeAnimatorController as AnimatorOverrideController;
+        overrides["holding_anim_empty"] = null;
+        anim.SetLayerWeight(1, 0);
+        holdingRig.weight = 0;
+
         inventoryPanel.SetActive(true);
+    }
+
+    void Update()
+    {
+        if (hasAuthority)
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                SetEquippedItem(1);
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                SetEquippedItem(2);
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                SetEquippedItem(3);
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha4))
+            {
+                SetEquippedItem(4);
+            }
+            if (Input.GetKeyDown(KeyCode.Alpha5))
+            {
+                SetEquippedItem(5);
+            }
+        }
     }
 
     private void DrawInventory()
@@ -33,11 +76,43 @@ public class PlayerHotbar : NetworkBehaviour, IGameInventory
                 if (inventory.ContainsKey(index))
                 {
                     InventoryItem item = inventory[index];
-                    slot.Set(item, player, this, index);
+                    slot.Set(item, player, this, index, equippedItem - 1 == index);
+                    if (equippedItem - 1 == index)
+                    {
+                        GameObject newHolding = null;
+                        if (holding && holding.name != item.data.name)
+                        {
+                            DestroyImmediate(holding);
+                            newHolding = Instantiate(item.data.holdingItem, holdingParent.transform, false);
+                            newHolding.name = item.data.name;
+                            holding = newHolding;
+                        }
+                        else if (!holding)
+                        {
+                            
+                            newHolding = Instantiate(item.data.holdingItem, holdingParent.transform, false);
+                            newHolding.name = item.data.name;
+                            holding = newHolding;
+                        }
+
+                        overrides["holding_anim_empty"] = newHolding.GetComponent<WeaponScript>().weaponAnimation;
+                        anim.SetLayerWeight(1, 1);
+                        holdingRig.weight = 1;
+                    }
                 }
                 else
                 {
-                    slot.Set(null, player, this, index);
+                    slot.Set(null, player, this, index, equippedItem - 1 == index);
+                    if (equippedItem - 1 == index)
+                    {
+                        if (holding)
+                        {
+                            anim.SetLayerWeight(1, 0);
+                            holdingRig.weight = 0;
+                            overrides["holding_anim_empty"] = null;
+                            Destroy(holding);
+                        }
+                    }
                 }
                 index++;
             }
@@ -147,5 +222,23 @@ public class PlayerHotbar : NetworkBehaviour, IGameInventory
         }
 
         return -1;
+    }
+
+    public void SetEquippedItem(int index)
+    {
+        equippedItem = index;
+        onInventoryChangeEvent?.Invoke();
+    }
+
+    [ContextMenu("Save weapon pose")]
+    void SaveWeaponPose()
+    {
+        GameObjectRecorder recorder = new GameObjectRecorder(anim.gameObject);
+        recorder.BindComponentsOfType<Transform>(holding.gameObject, false);
+        recorder.BindComponentsOfType<Transform>(leftGrip.gameObject, false);
+        recorder.BindComponentsOfType<Transform>(rightGrip.gameObject, false);
+        recorder.TakeSnapshot(0.0f);
+        recorder.SaveToClip(holding.GetComponent<WeaponScript>().weaponAnimation);
+        UnityEditor.AssetDatabase.SaveAssets();
     }
 }
