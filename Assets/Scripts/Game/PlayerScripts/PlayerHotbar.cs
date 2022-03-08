@@ -19,7 +19,6 @@ public class PlayerHotbar : NetworkBehaviour, IGameInventory
     public Transform rightGrip;
 
     [SerializeField] Animator anim;
-    AnimatorOverrideController overrides;
 
     public Dictionary<int, InventoryItem> inventory = new Dictionary<int, InventoryItem>();
 
@@ -30,10 +29,7 @@ public class PlayerHotbar : NetworkBehaviour, IGameInventory
         onInventoryChangeEvent += DrawInventory;
         onInventoryChangeEvent?.Invoke();
 
-        overrides = anim.runtimeAnimatorController as AnimatorOverrideController;
-        overrides["holding_anim_empty"] = null;
         anim.SetLayerWeight(1, 0);
-        holdingRig.weight = 0;
 
         inventoryPanel.SetActive(true);
     }
@@ -80,24 +76,24 @@ public class PlayerHotbar : NetworkBehaviour, IGameInventory
                     if (equippedItem - 1 == index)
                     {
                         GameObject newHolding = null;
+                        
                         if (holding && holding.name != item.data.name)
                         {
                             DestroyImmediate(holding);
                             newHolding = Instantiate(item.data.holdingItem, holdingParent.transform, false);
                             newHolding.name = item.data.name;
                             holding = newHolding;
+                            
                         }
                         else if (!holding)
                         {
-                            
+
                             newHolding = Instantiate(item.data.holdingItem, holdingParent.transform, false);
                             newHolding.name = item.data.name;
                             holding = newHolding;
                         }
 
-                        overrides["holding_anim_empty"] = newHolding.GetComponent<WeaponScript>().weaponAnimation;
-                        anim.SetLayerWeight(1, 1);
-                        holdingRig.weight = 1;
+                        anim.Play("equip_" + item.data.id);
                     }
                 }
                 else
@@ -105,11 +101,10 @@ public class PlayerHotbar : NetworkBehaviour, IGameInventory
                     slot.Set(null, player, this, index, equippedItem - 1 == index);
                     if (equippedItem - 1 == index)
                     {
+
+                        anim.Play("empty");
                         if (holding)
                         {
-                            anim.SetLayerWeight(1, 0);
-                            holdingRig.weight = 0;
-                            overrides["holding_anim_empty"] = null;
                             Destroy(holding);
                         }
                     }
