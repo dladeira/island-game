@@ -8,6 +8,8 @@ public class PlayerMovement : NetworkBehaviour
     [Header("Camera")]
     [SerializeField] public float sens = 10F;
     [SerializeField] private Transform playerCamera;
+    [SerializeField] private float lookMinY = -90F;
+    [SerializeField] private float lookMaxX = 90F;
 
     [Header("Movement Values")]
     [SerializeField] private float acceleration;
@@ -34,8 +36,6 @@ public class PlayerMovement : NetworkBehaviour
 
     private Rigidbody rb;
 
-    private float lookMinY = -90F;
-    private float lookMaxX = 90F;
     private float lookYRotation = 0;
 
     private float timeSinceJump = 0;
