@@ -58,6 +58,8 @@ public class PlayerHotbar : NetworkBehaviour, IGameInventory
             {
                 SetEquippedItem(5);
             }
+
+            anim.SetBool("IsSwinging", Input.GetMouseButton(0));
         }
     }
 
