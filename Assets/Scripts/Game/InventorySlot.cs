@@ -5,101 +5,92 @@ using TMPro;
 
 public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IDropHandler
 {
-    private Canvas canvas;
+    // Item to drag
     [SerializeField] private RectTransform itemToMove;
     [SerializeField] private CanvasGroup canvasGroup;
 
-    [SerializeField] private TMP_Text text;
-    [SerializeField] private TMP_Text counter;
-    [SerializeField] private Image image;
-    [SerializeField] private Image selectedImage;
+    // Display
+    [SerializeField] private TMP_Text displayText;
+    [SerializeField] private TMP_Text displayCounter;
+    [SerializeField] private Image displayImage;
+    [SerializeField] private Image displayEquippedBackground;
 
-    public NetworkGamePlayerIsland player;
-    public InventoryItem item;
-    public IGameInventory inventory;
-    public InventoryRecipeData recipe;
-    public int id;
-    public bool interactable;
-    public bool crafting;
+    // Player (or loaded from player)
+    private NetworkGamePlayerIsland player;
+    private Canvas canvas;
 
-    public void Set(InventoryItem item, NetworkGamePlayerIsland player, IGameInventory sourceInventory)
+    // Other info
+    private InventoryItem item;
+    private bool equipped;
+    private int id;
+
+    void Start()
     {
-        Set(item, player, sourceInventory, 0, false);
+        // Reset item slot on start
+        ClearItem();
+        SetEquipped(false);
     }
 
-    public void Set(InventoryItem item, NetworkGamePlayerIsland player, IGameInventory sourceInventory, int id, bool selected)
+    public void SetPlayer(NetworkGamePlayerIsland player)
     {
         this.player = player;
-        this.inventory = sourceInventory;
         this.canvas = player.canvas;
+    }
+
+    public void SetItem(InventoryItem item)
+    {
+        displayText.text = item.data.displayName;
+        displayCounter.text = item.stackSize.ToString();
+
+        displayImage.gameObject.SetActive(true);
+        displayImage.sprite = item.data.icon;
+
+        this.item = item;
+    }
+
+    public void ClearItem()
+    {
+        displayText.text = "";
+        displayCounter.text = "";
+
+        displayImage.gameObject.SetActive(false);
+
+        this.item = null;
+    }
+
+    public InventoryItem GetItem()
+    {
+        return item;
+    }
+
+    public void SetId(int id)
+    {
         this.id = id;
-        this.interactable = true;
-        this.crafting = false;
-        this.selectedImage.gameObject.SetActive(selected);
-
-        if (item != null)
-        {
-            this.item = item;
-
-            text.text = item.data.displayName;
-            counter.text = item.stackSize.ToString();
-            image.enabled = true;
-            image.sprite = item.data.icon;
-        }
-        else
-        {
-            this.item = null;
-
-            text.text = "";
-            counter.text = "";
-            image.enabled = false;
-        }
     }
 
-    public void Set(InventoryItem item, NetworkGamePlayerIsland player, int test, bool interactable, InventoryRecipeData recipe)
+    public int GetId()
     {
-        this.canvas = player.canvas;
-        this.interactable = interactable;
-        this.crafting = true;
-        this.recipe = recipe;
-        this.player = player;
-        this.selectedImage.gameObject.SetActive(false);
+        return id;
+    }
 
+    public void SetEquipped(bool equipped)
+    {
+        this.equipped = equipped;
 
-        if (item != null)
-        {
-            this.item = item;
-
-            text.text = item.data.displayName;
-            counter.text = item.stackSize.ToString();
-            image.enabled = true;
-            image.sprite = item.data.icon;
-        }
-        else
-        {
-            this.item = null;
-
-            text.text = "";
-            counter.text = "";
-            image.enabled = false;
-        }
+        displayEquippedBackground.gameObject.SetActive(equipped);
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (item != null && eventData.button == PointerEventData.InputButton.Right && interactable)
+        if (item != null && eventData.button == PointerEventData.InputButton.Right)
         {
-            player.DropItem(item.data.id, inventory);
-        }
-        else if (crafting && recipe != null)
-        {
-            player.CraftItem(recipe);
+            player.DropItem(id, Input.GetKey(KeyCode.LeftShift));
         }
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (item != null && interactable)
+        if (item != null)
         {
             canvasGroup.alpha = 0.6f;
             canvasGroup.blocksRaycasts = false;
@@ -108,16 +99,13 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (interactable)
-        {
-            itemToMove.anchoredPosition = new Vector2(0, 0);
-            canvasGroup.blocksRaycasts = true;
-        }
+        itemToMove.anchoredPosition = new Vector2(0, 0);
+        canvasGroup.blocksRaycasts = true;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (item != null && interactable)
+        if (item != null)
         {
             canvasGroup.alpha = 1;
             itemToMove.anchoredPosition += eventData.delta / canvas.scaleFactor;
@@ -130,13 +118,17 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
         GameObject movingItem = eventData.pointerDrag;
         InventorySlot sourceSlot = movingItem.GetComponent<InventorySlot>();
 
-        if (sourceSlot && interactable)
+        // If a inventory slot has been dragged on this slot and it has a item
+        if (sourceSlot && sourceSlot.item != null)
         {
             InventoryItem draggedItem = sourceSlot.item;
             int count = draggedItem.stackSize; // Use in seperate variable because stackSize is affected when removing items
 
-            sourceSlot.inventory.Remove(draggedItem.data, count);
-            inventory.Add(draggedItem.data, count, id);
+            if (this.item != null)
+                sourceSlot.SetItem(this.item);
+            else
+                sourceSlot.ClearItem();
+            SetItem(draggedItem);
         }
     }
 }

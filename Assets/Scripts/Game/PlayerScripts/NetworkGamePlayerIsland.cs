@@ -8,18 +8,17 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 {
     [SyncVar] public string displayName;
 
-    [Scene] [SerializeField] private string lobbyScene;
+    [Scene][SerializeField] private string lobbyScene;
 
     [Header("Helper Scripts")]
     [SerializeField] private PlayerMovement movement;
+    [SerializeField] private PlayerInventory inventory;
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
 
     [Header("Inventory")]
-    [SerializeField] public PlayerHotbar hotbar;
-    [SerializeField] public PlayerInventory inventory;
-    [SerializeField] public PlayerCrafting crafting;
+    // [SerializeField] public PlayerCrafting crafting;
     [SerializeField] private TMP_Text pickupText;
     [SerializeField] private float lookDistance;
     [SerializeField] private LayerMask pickupMask;
@@ -76,8 +75,8 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
                 Cursor.lockState = inventoryOpen ? CursorLockMode.None : CursorLockMode.Locked;
 
-                inventory.ToggleInventory(inventoryOpen);
-                crafting.ToggleOpen(inventoryOpen);
+                inventory.ToggleOpen(inventoryOpen);
+                // crafting.ToggleOpen(inventoryOpen);
                 movement.ToggleMovement(!inventoryOpen);
                 movement.ToggleLook(!inventoryOpen);
             }
@@ -135,20 +134,15 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         }
     }
 
-    public void DropItem(string itemID, IGameInventory inventory)
+    public void DropItem(int slotId, bool dropEntireStack)
     {
-        CmdDropItem(itemID, playerCamera.position + (playerCamera.forward * 0.2f) - (playerCamera.up * 0.2f), inventory.GetName(), true);
+        CmdDropItem(slotId, playerCamera.position + (playerCamera.forward * 0.2f) - (playerCamera.up * 0.2f), dropEntireStack);
     }
 
-    public void DropItem(string itemID, IGameInventory inventory, bool drop)
-    {
-        CmdDropItem(itemID, playerCamera.position + (playerCamera.forward * 0.2f) - (playerCamera.up * 0.2f), inventory.GetName(), drop);
-    }
-
-    public void CraftItem(InventoryRecipeData data)
-    {
-        CmdCraftItem(data);
-    }
+    // public void CraftItem(InventoryRecipeData data)
+    // {
+    //     CmdCraftItem(data);
+    // }
 
     [Command]
     private void CmdPickupItem(ItemObject item, PlayerInventory inventory)
@@ -156,23 +150,26 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         RpcPickupItem(item, inventory);
     }
 
-    [Command]
-    private void CmdCraftItem(InventoryRecipeData data)
-    {
-        RpcCraftItem(data);
-    }
+    // [Command]
+    // private void CmdCraftItem(InventoryRecipeData data)
+    // {
+    //     RpcCraftItem(data);
+    // }
 
     [Command]
-    private void CmdDropItem(string itemId, Vector3 position, string inventoryName, bool drop)
+    private void CmdDropItem(int slotId, Vector3 position, bool dropEntireStack)
     {
-        if (drop)
+        InventoryItem items = inventory.GetSlot(slotId);
+
+        // Spawn dropped items
+        for (int i = 0; i < (dropEntireStack ? items.stackSize : 1); i++)
         {
-            ItemObject itemObject = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId).itemObjectPrefab.GetComponent<ItemObject>();
+            ItemObject itemObject = items.data.itemObjectPrefab.GetComponent<ItemObject>();
             ItemObject spawnedItem = Instantiate(itemObject, position, Quaternion.Euler(0, 0, 0));
             NetworkServer.Spawn(spawnedItem.gameObject);
         }
 
-        RpcDropItem(itemId, inventoryName);
+        RpcDropItem(slotId, dropEntireStack);
     }
 
     [ClientRpc]
@@ -182,57 +179,54 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void RpcDropItem(string itemId, string inventoryName)
+    private void RpcDropItem(int slotId, bool dropEntireStack)
     {
-        InventoryItemData item = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId);
-        switch (inventoryName)
+        if (dropEntireStack)
         {
-            case "PlayerInventory":
-                inventory.Remove(item, 1);
-                break;
-            case "PlayerHotbar":
-                hotbar.Remove(item, 1);
-                break;
+            inventory.SetSlot(slotId, null);
+        }
+        else {
+            inventory.ModifySlot(slotId, -1);
         }
     }
 
-    [ClientRpc]
-    private void RpcCraftItem(InventoryRecipeData data)
-    {
-        List<InventoryItemData> itemsToRemove = new List<InventoryItemData>(data.input);
-        List<InventoryItemData> itemsToHave = new List<InventoryItemData>(data.input);
+    // [ClientRpc]
+    // private void RpcCraftItem(InventoryRecipeData data)
+    // {
+    //     List<InventoryItemData> itemsToRemove = new List<InventoryItemData>(data.input);
+    //     List<InventoryItemData> itemsToHave = new List<InventoryItemData>(data.input);
 
-        for (int haveIndex = data.input.Count - 1; haveIndex >= 0; haveIndex--)
-        {
-            if (inventory.Has(data.input[haveIndex], data.inputAmount[haveIndex]))
-            {
-                itemsToHave.RemoveAt(haveIndex);
-            }
-            else if (hotbar.Has(data.input[haveIndex], data.inputAmount[haveIndex]))
-            {
-                itemsToHave.RemoveAt(haveIndex);
-            }
-        }
+    //     for (int haveIndex = data.input.Count - 1; haveIndex >= 0; haveIndex--)
+    //     {
+    //         if (fakeInventory.Has(data.input[haveIndex], data.inputAmount[haveIndex]))
+    //         {
+    //             itemsToHave.RemoveAt(haveIndex);
+    //         }
+    //         else if (hotbar.Has(data.input[haveIndex], data.inputAmount[haveIndex]))
+    //         {
+    //             itemsToHave.RemoveAt(haveIndex);
+    //         }
+    //     }
 
 
-        if (itemsToHave.Count <= 0)
-        {
-            for (int removeIndex = data.input.Count - 1; removeIndex >= 0; removeIndex--)
-            {
-                if (inventory.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
-                {
-                    itemsToRemove.RemoveAt(removeIndex);
-                }
-                else if (hotbar.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
-                {
-                    itemsToRemove.RemoveAt(removeIndex);
-                }
-            }
-            for (int addIndex = 0; addIndex < data.output.Count; addIndex++)
-            {
-                Debug.Log("adding " + data.output[addIndex]);
-                inventory.Add(data.output[addIndex], data.outputAmount[addIndex]);
-            }
-        }
-    }
+    //     if (itemsToHave.Count <= 0)
+    //     {
+    //         for (int removeIndex = data.input.Count - 1; removeIndex >= 0; removeIndex--)
+    //         {
+    //             if (fakeInventory.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
+    //             {
+    //                 itemsToRemove.RemoveAt(removeIndex);
+    //             }
+    //             else if (hotbar.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
+    //             {
+    //                 itemsToRemove.RemoveAt(removeIndex);
+    //             }
+    //         }
+    //         for (int addIndex = 0; addIndex < data.output.Count; addIndex++)
+    //         {
+    //             Debug.Log("adding " + data.output[addIndex]);
+    //             fakeInventory.Add(data.output[addIndex], data.outputAmount[addIndex]);
+    //         }
+    //     }
+    // }
 }

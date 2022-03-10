@@ -1,140 +1,167 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
-public class PlayerInventory : NetworkBehaviour, IGameInventory
+public class PlayerInventory : NetworkBehaviour
 {
     [SerializeField] private NetworkGamePlayerIsland player;
-    [SerializeField] private List<InventorySlot> inventorySlots;
-    [SerializeField] private GameObject inventoryPanel;
-    [SerializeField] private int inventorySize;
 
-    public List<InventoryItem> inventory = new List<InventoryItem>();
+    [SerializeField] private GameObject inventoryPanel;
+    [SerializeField] private List<InventorySlot> backpack;
+    [SerializeField] private List<InventorySlot> hotbar;
+
+    private List<InventorySlot> inventorySlots;
+
+    void Awake()
+    {
+        inventorySlots = new List<InventorySlot>();
+        inventorySlots.AddRange(hotbar);
+        inventorySlots.AddRange(backpack);
+
+        int setId = 0;
+        foreach (InventorySlot slot in inventorySlots)
+        {
+            slot.SetId(setId++);
+            slot.SetPlayer(player);
+        }
+
+        ToggleOpen(false);
+    }
 
     public event Action onInventoryChangeEvent;
 
-    void Start()
+    public bool AddItem(InventoryItem item)
     {
-        onInventoryChangeEvent += DrawInventory;
-        onInventoryChangeEvent?.Invoke();
+        int slotId = GetFirstItemSlot(item);
 
-        ToggleInventory(false);
+        if (slotId >= 0)
+        {
+            ModifySlot(slotId, item.stackSize);
+            return true;
+        }
+        int emptyInventorySlot = GetNextEmptyInventorySlot();
+
+        if (emptyInventorySlot >= 0)
+        {
+            SetSlot(emptyInventorySlot, item);
+            return true;
+        }
+        return false;
     }
 
-    private void DrawInventory()
+    public void ToggleOpen(bool open)
     {
-        if (hasAuthority) // Only draw our own inventory
-        {
-            int index = 0;
+        inventoryPanel.SetActive(open);
+    }
 
-            foreach (InventorySlot slot in inventorySlots)
+    // ===== Helper Methods
+
+    public void SetSlot(int slotId, InventoryItem item)
+    {
+        foreach (InventorySlot slot in inventorySlots)
+        {
+            if (slot.GetId() == slotId)
             {
-                if (inventory.Count > index)
+                if (item != null)
                 {
-                    InventoryItem item = inventory[index];
-                    slot.Set(item, player, this);
+                    slot.SetItem(item);
                 }
                 else
                 {
-                    slot.Set(null, player, this);
+                    slot.ClearItem();
                 }
-                index++;
             }
         }
     }
 
-    public string GetName()
+    public void ModifySlot(int slotId, int stackChange)
     {
-        return "PlayerInventory";
-    }
+        InventoryItem item = GetSlot(slotId);
 
-    public bool Add(InventoryItemData reference, int count)
-    {
-        return CmdAdd(reference.id, count);
-    }
-
-    public bool Add(InventoryItemData reference, int count, int slotId)
-    {
-        return CmdAdd(reference.id, count);
-    }
-
-    public bool Remove(InventoryItemData reference, int count)
-    {
-        CmdRemove(reference.id, count);
-        return true;
-    }
-
-    public bool Has(InventoryItemData reference, int count)
-    {
-
-        InventoryItem itemStack = GetInventoryItem(reference);
-        if (itemStack != null)
+        if (item != null)
         {
-            return itemStack.stackSize >= count;
-        }
-        else
-        {
-            return false;
-        }
-    }
+            item.AddToStack(stackChange);
 
-    public bool CmdAdd(string itemId, int count)
-    {
-        if (inventory.Count >= inventorySize)
-            return false;
-
-        InventoryItemData referenceData = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId);
-
-        InventoryItem itemStack = GetInventoryItem(referenceData);
-        if (itemStack != null)
-        {
-            itemStack.AddToStack(count);
-        }
-        else
-        {
-            InventoryItem newItem = new InventoryItem(referenceData, count);
-            inventory.Add(newItem);
-        }
-
-        onInventoryChangeEvent?.Invoke();
-        return true;
-    }
-
-    public void CmdRemove(string itemId, int count)
-    {
-        InventoryItemData referenceData = (NetworkManager.singleton as NetworkManagerIsland).IdToItem(itemId);
-
-        InventoryItem itemStack = GetInventoryItem(referenceData);
-        if (itemStack != null)
-        {
-            itemStack.RemoveFromStack(count);
-
-            if (itemStack.stackSize <= 0)
+            if (item.stackSize <= 0)
             {
-                inventory.Remove(itemStack);
+                SetSlot(slotId, null);
+                return;
             }
         }
 
-        onInventoryChangeEvent?.Invoke();
+
+        SetSlot(slotId, item);
     }
 
-    public InventoryItem GetInventoryItem(InventoryItemData referenceData)
+    public InventoryItem GetSlot(int slotId)
     {
-        for (var i = 0; i < inventory.Count; i++)
+        foreach (InventorySlot slot in inventorySlots)
         {
-            InventoryItem item = inventory[i];
-
-            if (item.data.id == referenceData.id)
+            if (slot.GetId() == slotId)
             {
-                return item;
+                return slot.GetItem();
             }
         }
+
         return null;
     }
 
-    public void ToggleInventory(bool open)
+    public int GetFirstItemSlot(InventoryItem item)
     {
-        inventoryPanel.SetActive(open);
+        foreach (InventorySlot slot in inventorySlots)
+        {
+            if (slot.GetItem() != null)
+            {
+                if (slot.GetItem().data.id == item.data.id)
+                {
+                    return slot.GetId();
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    private int GetNextEmptyInventorySlot()
+    {
+        for (int i = 0; i < inventorySlots.Count; i++)
+        {
+            // Skip all the hotbar slots
+            if (GetSlot(hotbar.Count + i) == null)
+                return hotbar.Count + i;
+        }
+
+        return -1;
+    }
+
+    private void GetItems()
+    {
+        List<InventoryItem> items = new List<InventoryItem>();
+
+        foreach (InventorySlot slot in inventorySlots)
+        {
+            InventoryItem slotItem = slot.GetItem();
+
+            if (slotItem != null)
+            {
+                bool itemFound = false;
+
+                foreach (InventoryItem item in items)
+                {
+                    if (item.data.id == slotItem.data.id)
+                    {
+                        item.AddToStack(item.stackSize);
+                        itemFound = true;
+                        break;
+                    }
+                }
+
+                if (!itemFound)
+                    items.Add(slotItem);
+            }
+
+        }
     }
 }
