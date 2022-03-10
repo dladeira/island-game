@@ -182,7 +182,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1920684432627777010}
   m_Layer: 9
-  m_Name: WeaponPivot
+  m_Name: WeaponHolder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -199,7 +199,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 8539952156378936427}
   m_Father: {fileID: 5492092671835203768}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1119,6 +1120,37 @@ Transform:
   m_Children:
   - {fileID: 992269874314118578}
   m_Father: {fileID: 111187496003811107}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2740036622501109027
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8539952156378936427}
+  m_Layer: 9
+  m_Name: WeaponPivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8539952156378936427
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2740036622501109027}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1920684432627777010}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2792221797669083965
@@ -2179,6 +2211,7 @@ GameObject:
   - component: {fileID: 6019103102172592661}
   - component: {fileID: 5358619720134275193}
   - component: {fileID: 6084058490985956115}
+  - component: {fileID: 995776810585156554}
   - component: {fileID: 2958851413055740858}
   - component: {fileID: 6243213731067909401}
   - component: {fileID: 1175401979294668283}
@@ -2260,7 +2293,6 @@ MonoBehaviour:
   movement: {fileID: 5358619720134275193}
   inventory: {fileID: 6084058490985956115}
   animator: {fileID: 2958851413055740858}
-  crafting: {fileID: 0}
   pickupText: {fileID: 8585154595841612908}
   lookDistance: 5
   pickupMask:
@@ -2343,6 +2375,23 @@ MonoBehaviour:
   - {fileID: 6167544861971535831}
   - {fileID: 1654369695107133139}
   - {fileID: 7803256476357380228}
+--- !u!114 &995776810585156554
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6019103102172592656}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2102f0a87bb67a6e89e7e5d02e9db101, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
+  inventory: {fileID: 6084058490985956115}
+  equippedParent: {fileID: 2740036622501109027}
+  anim: {fileID: 6753665862711634233}
 --- !u!95 &2958851413055740858
 Animator:
   serializedVersion: 4

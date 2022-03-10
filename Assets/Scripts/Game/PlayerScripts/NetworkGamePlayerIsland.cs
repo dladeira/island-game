@@ -12,7 +12,7 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
     [Header("Helper Scripts")]
     [SerializeField] private PlayerMovement movement;
-    [SerializeField] private PlayerInventory inventory;
+    [SerializeField] public PlayerInventory inventory;
 
     [Header("Animation")]
     [SerializeField] private Animator animator;

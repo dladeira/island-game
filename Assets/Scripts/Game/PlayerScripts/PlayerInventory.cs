@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
@@ -32,6 +31,17 @@ public class PlayerInventory : NetworkBehaviour
 
     public event Action onInventoryChangeEvent;
 
+    public void ToggleOpen(bool open)
+    {
+        inventoryPanel.SetActive(open);
+    }
+
+    public void UpdateInventory()
+    {
+        onInventoryChangeEvent?.Invoke();
+        Debug.Log("updating inventory 2");
+    }
+
     public bool AddItem(InventoryItem item)
     {
         int slotId = GetFirstItemSlot(item);
@@ -49,11 +59,6 @@ public class PlayerInventory : NetworkBehaviour
             return true;
         }
         return false;
-    }
-
-    public void ToggleOpen(bool open)
-    {
-        inventoryPanel.SetActive(open);
     }
 
     // ===== Helper Methods
@@ -74,6 +79,8 @@ public class PlayerInventory : NetworkBehaviour
                 }
             }
         }
+
+        UpdateInventory();
     }
 
     public void ModifySlot(int slotId, int stackChange)
@@ -97,11 +104,16 @@ public class PlayerInventory : NetworkBehaviour
 
     public InventoryItem GetSlot(int slotId)
     {
+        return GetSlotObject(slotId).GetItem();
+    }
+
+    public InventorySlot GetSlotObject(int slotId)
+    {
         foreach (InventorySlot slot in inventorySlots)
         {
             if (slot.GetId() == slotId)
             {
-                return slot.GetItem();
+                return slot;
             }
         }
 

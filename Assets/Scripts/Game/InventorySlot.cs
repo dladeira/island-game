@@ -24,7 +24,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
     private bool equipped;
     private int id;
 
-    void Start()
+    void Awake()
     {
         // Reset item slot on start
         ClearItem();
@@ -128,7 +128,9 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
                 sourceSlot.SetItem(this.item);
             else
                 sourceSlot.ClearItem();
+
             SetItem(draggedItem);
+            player.inventory.UpdateInventory();
         }
     }
 }
