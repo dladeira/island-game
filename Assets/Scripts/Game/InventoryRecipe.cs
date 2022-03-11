@@ -8,7 +8,7 @@ public class InventoryRecipe : MonoBehaviour
     [SerializeField] private GameObject inputObject;
     [SerializeField] private GameObject outputObject;
     [SerializeField] private GameObject ItemSlotPrefab;
-    [SerializeField] private NetworkGamePlayerIsland player;
+    [SerializeField] private PlayerManager player;
 
     // void Start()
     // {

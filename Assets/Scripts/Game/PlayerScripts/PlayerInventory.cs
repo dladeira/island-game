@@ -2,16 +2,25 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using TMPro;
 
 public class PlayerInventory : NetworkBehaviour
 {
-    [SerializeField] private NetworkGamePlayerIsland player;
+    [SerializeField] private PlayerManager player;
 
+    [Header("UI")]
     [SerializeField] private GameObject inventoryPanel;
     [SerializeField] private List<InventorySlot> backpack;
     [SerializeField] private List<InventorySlot> hotbar;
 
+    [Header("Pickup")]
+    [SerializeField] private TMP_Text pickupText;
+    [SerializeField] private LayerMask pickupMask;
+    [SerializeField] private float lookDistance;
+
     private List<InventorySlot> inventorySlots;
+
+    public event Action onInventoryChangeEvent;
 
     void Awake()
     {
@@ -19,27 +28,25 @@ public class PlayerInventory : NetworkBehaviour
         inventorySlots.AddRange(hotbar);
         inventorySlots.AddRange(backpack);
 
-        int setId = 0;
         foreach (InventorySlot slot in inventorySlots)
-        {
-            slot.SetId(setId++);
-            slot.SetPlayer(player);
-        }
+            slot.Initialize(player, inventorySlots.IndexOf(slot));
 
         ToggleOpen(false);
     }
 
-    public event Action onInventoryChangeEvent;
-
-    public void ToggleOpen(bool open)
+    void Update()
     {
-        inventoryPanel.SetActive(open);
+        DoItemPickup();
     }
 
     public void UpdateInventory()
     {
         onInventoryChangeEvent?.Invoke();
-        Debug.Log("updating inventory 2");
+    }
+
+    public void ToggleOpen(bool open)
+    {
+        inventoryPanel.SetActive(open);
     }
 
     public bool AddItem(InventoryItem item)
@@ -61,7 +68,7 @@ public class PlayerInventory : NetworkBehaviour
         return false;
     }
 
-    // ===== Helper Methods
+    // ===== Slot methods
 
     public void SetSlot(int slotId, InventoryItem item)
     {
@@ -69,14 +76,7 @@ public class PlayerInventory : NetworkBehaviour
         {
             if (slot.GetId() == slotId)
             {
-                if (item != null)
-                {
-                    slot.SetItem(item);
-                }
-                else
-                {
-                    slot.ClearItem();
-                }
+                slot.SetItem(item);
             }
         }
 
@@ -120,7 +120,7 @@ public class PlayerInventory : NetworkBehaviour
         return null;
     }
 
-    public int GetFirstItemSlot(InventoryItem item)
+    private int GetFirstItemSlot(InventoryItem item)
     {
         foreach (InventorySlot slot in inventorySlots)
         {
@@ -175,5 +175,46 @@ public class PlayerInventory : NetworkBehaviour
             }
 
         }
+    }
+
+    private void DoItemPickup()
+    {
+        if (hasAuthority)
+        {
+            RaycastHit hit;
+
+            if (Physics.Raycast(player.playerCamera.position, player.playerCamera.forward, out hit, lookDistance, pickupMask))
+            {
+                ItemObject item = hit.transform.GetComponent<ItemObject>();
+                pickupText.transform.gameObject.SetActive(true);
+                pickupText.text = "Pickup '" + item.referenceItem.displayName + "'";
+
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    CmdPickupItem(item);
+                }
+            }
+            else
+            {
+                pickupText.transform.gameObject.SetActive(false);
+            }
+
+        }
+        else
+        {
+            pickupText.transform.gameObject.SetActive(false);
+        }
+    }
+
+    [Command]
+    private void CmdPickupItem(ItemObject target)
+    {
+        RpcPickupItem(target);
+    }
+
+    [ClientRpc]
+    private void RpcPickupItem(ItemObject target)
+    {
+        target.OnHandlePickupItem(this);
     }
 }

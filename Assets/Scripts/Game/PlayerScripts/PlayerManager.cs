@@ -1,14 +1,13 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Mirror;
-using TMPro;
 
-public class NetworkGamePlayerIsland : NetworkBehaviour
+public class PlayerManager : NetworkBehaviour
 {
     [SyncVar] public string displayName;
 
     [Scene][SerializeField] private string lobbyScene;
+    [SerializeField] public Transform playerCamera;
 
     [Header("Helper Scripts")]
     [SerializeField] private PlayerMovement movement;
@@ -16,14 +15,6 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
-
-    [Header("Inventory")]
-    // [SerializeField] public PlayerCrafting crafting;
-    [SerializeField] private TMP_Text pickupText;
-    [SerializeField] private float lookDistance;
-    [SerializeField] private LayerMask pickupMask;
-
-    [SerializeField] private Transform playerCamera;
     [SerializeField] public Canvas canvas;
 
     bool inventoryOpen = false;
@@ -51,7 +42,6 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     void Update()
     {
         DoButtons();
-        DoItemPickup();
 
         if (hasAuthority)
         {
@@ -105,35 +95,6 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     // Inventory
     // =====
 
-    public void DoItemPickup()
-    {
-        if (hasAuthority)
-        {
-            RaycastHit hit;
-
-            if (Physics.Raycast(playerCamera.position, playerCamera.forward, out hit, lookDistance, pickupMask))
-            {
-                ItemObject item = hit.transform.GetComponent<ItemObject>();
-                pickupText.transform.gameObject.SetActive(true);
-                pickupText.text = "Pickup '" + item.referenceItem.displayName + "'";
-
-                if (Input.GetKeyDown(KeyCode.E))
-                {
-                    CmdPickupItem(item, inventory);
-                }
-            }
-            else
-            {
-                pickupText.transform.gameObject.SetActive(false);
-            }
-
-        }
-        else
-        {
-            pickupText.transform.gameObject.SetActive(false);
-        }
-    }
-
     public void DropItem(int slotId, bool dropEntireStack)
     {
         CmdDropItem(slotId, playerCamera.position + (playerCamera.forward * 0.2f) - (playerCamera.up * 0.2f), dropEntireStack);
@@ -143,12 +104,6 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
     // {
     //     CmdCraftItem(data);
     // }
-
-    [Command]
-    private void CmdPickupItem(ItemObject item, PlayerInventory inventory)
-    {
-        RpcPickupItem(item, inventory);
-    }
 
     // [Command]
     // private void CmdCraftItem(InventoryRecipeData data)
@@ -170,12 +125,6 @@ public class NetworkGamePlayerIsland : NetworkBehaviour
         }
 
         RpcDropItem(slotId, dropEntireStack);
-    }
-
-    [ClientRpc]
-    private void RpcPickupItem(ItemObject item, PlayerInventory inventory)
-    {
-        item.OnHandlePickupItem(inventory);
     }
 
     [ClientRpc]

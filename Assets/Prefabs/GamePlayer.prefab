@@ -2290,15 +2290,10 @@ MonoBehaviour:
   syncInterval: 0.1
   displayName: 
   lobbyScene: Assets/Scenes/Menu.unity
+  playerCamera: {fileID: 6019103101741657516}
   movement: {fileID: 5358619720134275193}
   inventory: {fileID: 6084058490985956115}
   animator: {fileID: 2958851413055740858}
-  pickupText: {fileID: 8585154595841612908}
-  lookDistance: 5
-  pickupMask:
-    serializedVersion: 2
-    m_Bits: 256
-  playerCamera: {fileID: 6019103101741657516}
   canvas: {fileID: 5763753843584891513}
 --- !u!114 &5358619720134275193
 MonoBehaviour:
@@ -2375,6 +2370,11 @@ MonoBehaviour:
   - {fileID: 6167544861971535831}
   - {fileID: 1654369695107133139}
   - {fileID: 7803256476357380228}
+  pickupText: {fileID: 8585154595841612908}
+  pickupMask:
+    serializedVersion: 2
+    m_Bits: 256
+  lookDistance: 5
 --- !u!114 &995776810585156554
 MonoBehaviour:
   m_ObjectHideFlags: 0

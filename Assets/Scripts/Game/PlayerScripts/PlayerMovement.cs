@@ -245,7 +245,7 @@ public class PlayerMovement : NetworkBehaviour
         else if (jumpKeyPressed && timeSinceJump > 0.5f && yVelocity < jumpForce && !isGrounded)
         {
             jumpKeyPressed = false;
-            return CalculateVault(yVelocity);
+            // return CalculateVault(yVelocity);
         }
 
         jumpKeyPressed = false;

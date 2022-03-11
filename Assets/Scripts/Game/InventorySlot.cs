@@ -16,7 +16,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
     [SerializeField] private Image displayEquippedBackground;
 
     // Player (or loaded from player)
-    private NetworkGamePlayerIsland player;
+    private PlayerManager player;
     private Canvas canvas;
 
     // Other info
@@ -24,48 +24,42 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
     private bool equipped;
     private int id;
 
-    void Awake()
-    {
-        // Reset item slot on start
-        ClearItem();
-        SetEquipped(false);
-    }
-
-    public void SetPlayer(NetworkGamePlayerIsland player)
+    public void Initialize(PlayerManager player, int id)
     {
         this.player = player;
         this.canvas = player.canvas;
+        this.id = id;
+
+        SetItem(null);
+        SetEquipped(false);
     }
+
 
     public void SetItem(InventoryItem item)
     {
-        displayText.text = item.data.displayName;
-        displayCounter.text = item.stackSize.ToString();
-
-        displayImage.gameObject.SetActive(true);
-        displayImage.sprite = item.data.icon;
-
-        this.item = item;
+        if (item != null)
+        {
+            SetDisplay(item.data.displayName, item.stackSize.ToString(), item.data.icon);
+            this.item = item;
+        }
+        else
+        {
+            SetDisplay("", "", null);
+            this.item = null;
+        }
     }
 
-    public void ClearItem()
+    private void SetDisplay(string name, string counter, Sprite image)
     {
-        displayText.text = "";
-        displayCounter.text = "";
-
-        displayImage.gameObject.SetActive(false);
-
-        this.item = null;
+        this.displayText.text = name;
+        this.displayCounter.text = counter;
+        this.displayImage.sprite = image;
+        displayImage.gameObject.SetActive(image != null);
     }
 
     public InventoryItem GetItem()
     {
         return item;
-    }
-
-    public void SetId(int id)
-    {
-        this.id = id;
     }
 
     public int GetId()
@@ -76,7 +70,6 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
     public void SetEquipped(bool equipped)
     {
         this.equipped = equipped;
-
         displayEquippedBackground.gameObject.SetActive(equipped);
     }
 
@@ -122,12 +115,11 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
         if (sourceSlot && sourceSlot.item != null)
         {
             InventoryItem draggedItem = sourceSlot.item;
-            int count = draggedItem.stackSize; // Use in seperate variable because stackSize is affected when removing items
 
             if (this.item != null)
                 sourceSlot.SetItem(this.item);
             else
-                sourceSlot.ClearItem();
+                sourceSlot.SetItem(null);
 
             SetItem(draggedItem);
             player.inventory.UpdateInventory();

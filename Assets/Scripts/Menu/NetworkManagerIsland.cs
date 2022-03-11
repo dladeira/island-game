@@ -22,7 +22,7 @@ public class NetworkManagerIsland : NetworkManager
 
     [Header("Prefabs")]
     [SerializeField] private NetworkRoomPlayerIsland roomPlayerPrefab;
-    [SerializeField] private NetworkGamePlayerIsland gamePlayerPrefab;
+    [SerializeField] private PlayerManager gamePlayerPrefab;
 
     [Header("Items")]
     [SerializeField] private List<InventoryItemData> itemDatas;
@@ -31,7 +31,7 @@ public class NetworkManagerIsland : NetworkManager
     public static event Action OnClientDisconnected;
 
     public List<NetworkRoomPlayerIsland> RoomPlayers { get; } = new List<NetworkRoomPlayerIsland>();
-    public List<NetworkGamePlayerIsland> GamePlayers { get; } = new List<NetworkGamePlayerIsland>();
+    public List<PlayerManager> GamePlayers { get; } = new List<PlayerManager>();
 
     private NetworkManagerIsland room;
     private NetworkManagerIsland Room
@@ -68,7 +68,7 @@ public class NetworkManagerIsland : NetworkManager
         }
         else if (SceneManager.GetActiveScene().path == gameScene)
         {
-            NetworkGamePlayerIsland playerInstance = Instantiate(gamePlayerPrefab, new Vector3(10, 10, 10), Quaternion.Euler(0, 0, 0));
+            PlayerManager playerInstance = Instantiate(gamePlayerPrefab, new Vector3(10, 10, 10), Quaternion.Euler(0, 0, 0));
             NetworkServer.Spawn(playerInstance.gameObject);
             playerInstance.displayName = ("FAILED");
             Debug.Log(conn.connectionId);
@@ -142,7 +142,7 @@ public class NetworkManagerIsland : NetworkManager
             for (int i = 0; RoomPlayers.Count > i; i++)
             {
                 var conn = RoomPlayers[i].connectionToClient;
-                NetworkGamePlayerIsland playerInstance = Instantiate(gamePlayerPrefab, new Vector3(10, 10, 10), Quaternion.Euler(0, 0, 0));
+                PlayerManager playerInstance = Instantiate(gamePlayerPrefab, new Vector3(10, 10, 10), Quaternion.Euler(0, 0, 0));
                 NetworkServer.ReplacePlayerForConnection(conn, playerInstance.gameObject);
                 playerInstance.displayName = (RoomPlayers[i].DisplayName);
                 GamePlayers.Add(playerInstance);

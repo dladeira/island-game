@@ -68,8 +68,6 @@ public class PlayerHotbar : NetworkBehaviour
         inventory.GetSlotObject(index).SetEquipped(true);
 
         InventoryItem itemToEquip = inventory.GetSlot(index);
-        Debug.Log("item to equip: ");
-        Debug.Log(itemToEquip);
 
         foreach (Transform child in equippedParent.transform)
         {
@@ -80,7 +78,7 @@ public class PlayerHotbar : NetworkBehaviour
 
         if (itemToEquip != null)
         {
-            GameObject newHolding = Instantiate(itemToEquip.data.holdingItem, equippedParent.transform, false);
+            GameObject newHolding = Instantiate(itemToEquip.data.equippedPrefab, equippedParent.transform, false);
             newHolding.name = itemToEquip.data.id;
             anim.Play("equip_" + itemToEquip.data.id);
         }
