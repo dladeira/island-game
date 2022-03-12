@@ -2310,7 +2310,6 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   sens: 10
-  playerCamera: {fileID: 6019103101741657516}
   lookMinY: -75
   lookMaxX: 70
   acceleration: 0.7
@@ -2346,8 +2345,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  player: {fileID: 6019103102172592661}
   inventoryPanel: {fileID: 3426932537369809313}
+  hotbarPanel: {fileID: 1830113257025366389}
   backpack:
   - {fileID: 6329452169097138312}
   - {fileID: 6353807467611964450}
@@ -2389,7 +2388,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  inventory: {fileID: 6084058490985956115}
   equippedParent: {fileID: 2740036622501109027}
   anim: {fileID: 6753665862711634233}
 --- !u!95 &2958851413055740858
@@ -2712,6 +2710,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8ea9b6fd00739b46a46a7ce1e72f1e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hotbar: {fileID: 995776810585156554}
 --- !u!1 &6616132885966390605
 GameObject:
   m_ObjectHideFlags: 0

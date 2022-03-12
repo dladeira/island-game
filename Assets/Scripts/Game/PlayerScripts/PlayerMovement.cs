@@ -5,9 +5,10 @@ using Mirror;
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : NetworkBehaviour
 {
+    private PlayerManager player;
+
     [Header("Camera")]
     [SerializeField] public float sens = 10F;
-    [SerializeField] private Transform playerCamera;
     [SerializeField] private float lookMinY = -90F;
     [SerializeField] private float lookMaxX = 90F;
 
@@ -57,6 +58,7 @@ public class PlayerMovement : NetworkBehaviour
 
     void Awake()
     {
+        player = GetComponent<PlayerManager>();
         rb = GetComponent<Rigidbody>();
 
         // Ignore collisions with the layers in the ignoreCollisions variable
@@ -141,7 +143,7 @@ public class PlayerMovement : NetworkBehaviour
 
     private void DoLook()
     {
-        playerCamera.gameObject.SetActive(hasAuthority);
+        player.playerCamera.gameObject.SetActive(hasAuthority);
         if (hasAuthority && lookEnabled)
         {
             float rotationX = transform.localEulerAngles.y + Input.GetAxis("Mouse X") * sens;
@@ -149,7 +151,7 @@ public class PlayerMovement : NetworkBehaviour
             lookYRotation += Input.GetAxis("Mouse Y") * sens;
             lookYRotation = Mathf.Clamp(lookYRotation, lookMinY, lookMaxX);
 
-            playerCamera.transform.localEulerAngles = new Vector3(-lookYRotation, 0, 0);
+            player.playerCamera.transform.localEulerAngles = new Vector3(-lookYRotation, 0, 0);
             transform.localEulerAngles = new Vector3(0, rotationX, 0);
         }
     }

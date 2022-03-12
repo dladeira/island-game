@@ -6,10 +6,11 @@ using TMPro;
 
 public class PlayerInventory : NetworkBehaviour
 {
-    [SerializeField] private PlayerManager player;
+    private PlayerManager player;
 
     [Header("UI")]
     [SerializeField] private GameObject inventoryPanel;
+    [SerializeField] private GameObject hotbarPanel;
     [SerializeField] private List<InventorySlot> backpack;
     [SerializeField] private List<InventorySlot> hotbar;
 
@@ -24,6 +25,8 @@ public class PlayerInventory : NetworkBehaviour
 
     void Awake()
     {
+        this.player = GetComponent<PlayerManager>();
+
         inventorySlots = new List<InventorySlot>();
         inventorySlots.AddRange(hotbar);
         inventorySlots.AddRange(backpack);
@@ -32,6 +35,11 @@ public class PlayerInventory : NetworkBehaviour
             slot.Initialize(player, inventorySlots.IndexOf(slot));
 
         ToggleOpen(false);
+    }
+
+    public override void OnStartClient()
+    {
+        hotbarPanel.SetActive(hasAuthority);
     }
 
     void Update()

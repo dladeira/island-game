@@ -19,15 +19,17 @@ public class InventoryItemData : ScriptableObject
     // <summary>The prefab to use when spawning the item as a object (in game)</summary
     public GameObject itemObjectPrefab;
 
+    // <summary>The prefab to use when equipping the object (in game)</summary
     public GameObject equippedPrefab;
 
     // <summary>Set the values for the itemData, used for deserialization</summary>
-    public void SetValues(string id, string displayName, string iconPath, GameObject prefab)
+    public void SetValues(string id, string displayName, string iconPath, GameObject itemObjectPrefab, GameObject equipped)
     {
         this.id = id;
         this.displayName = displayName;
         this.icon = AssetDatabase.LoadAssetAtPath<Sprite>(iconPath);
-        this.itemObjectPrefab = prefab;
+        this.itemObjectPrefab = itemObjectPrefab;
+        this.equippedPrefab = equipped;
     }
 }
 
@@ -36,16 +38,29 @@ public static class InventoryItemDataReadWriteFunctions
 {
     public static void WriteMyType(this NetworkWriter writer, InventoryItemData value)
     {
-        writer.WriteString(value.id);
-        writer.WriteString(value.displayName);
-        writer.WriteString(AssetDatabase.GetAssetPath(value.icon));
-        writer.WriteGameObject(value.itemObjectPrefab);
+        writer.WriteString(value != null ? "200" : "NULL");
+
+        if (value)
+        {
+            writer.WriteString(value.id);
+            writer.WriteString(value.displayName);
+            writer.WriteString(AssetDatabase.GetAssetPath(value.icon));
+            writer.WriteString(value.itemObjectPrefab.name);
+            writer.WriteString(value.equippedPrefab.name);
+        }
     }
 
     public static InventoryItemData ReadMyType(this NetworkReader reader)
     {
-        InventoryItemData data = ScriptableObject.CreateInstance("InventoryItemData") as InventoryItemData;
-        data.SetValues(reader.ReadString(), reader.ReadString(), reader.ReadString(), reader.ReadGameObject());
-        return data;
+        String status = reader.ReadString();
+
+        if (status != "NULL")
+        {
+            InventoryItemData data = ScriptableObject.CreateInstance("InventoryItemData") as InventoryItemData;
+            data.SetValues(reader.ReadString(), reader.ReadString(), reader.ReadString(), Resources.Load<GameObject>(reader.ReadString()), Resources.Load<GameObject>(reader.ReadString()));
+            return data;
+        }
+        else
+            return null;
     }
 }

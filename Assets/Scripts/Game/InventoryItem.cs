@@ -53,12 +53,20 @@ public static class InventoryItemReadWriteFunctions
 {
     public static void WriteMyType(this NetworkWriter writer, InventoryItem item)
     {
-        writer.Write<InventoryItemData>(item.data);
-        writer.WriteInt(item.stackSize);
+        writer.WriteString(item != null ? "200" : "NULL");
+        if (item != null)
+        {
+            writer.Write<InventoryItemData>(item.data);
+            writer.WriteInt(item.stackSize);
+        }
     }
 
     public static InventoryItem ReadMyType(this NetworkReader reader)
     {
-        return new InventoryItem(reader.Read<InventoryItemData>(), reader.ReadInt());
+        string status = reader.ReadString();
+        if (status != "NULL")
+            return new InventoryItem(reader.Read<InventoryItemData>(), reader.ReadInt());
+        else
+            return null;
     }
 }

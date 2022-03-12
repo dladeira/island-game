@@ -15,5 +15,5 @@ MonoBehaviour:
   id: InventoryItem_Stick
   displayName: Stick
   icon: {fileID: 21300000, guid: 57113d360160a3a199f03449c24530f5, type: 3}
-  itemObjectPrefab: {fileID: 3393651960553259844, guid: a8463d8bca8f586fc8059278d9699d94, type: 3}
-  equippedPrefab: {fileID: 5310076965773010197, guid: d689a65e025fb37d7b9fc2be2e801ac2, type: 3}
+  itemObjectPrefab: {fileID: 3393651960553259844, guid: 2abdfe0febf23decd97cd42cee6f62c9, type: 3}
+  equippedPrefab: {fileID: 5310076965773010197, guid: 0c796533f06d3826c9990d2af0ab48c9, type: 3}

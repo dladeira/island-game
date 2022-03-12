@@ -1,31 +1,22 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
-using UnityEditor.Animations;
-using UnityEngine.Animations.Rigging;
 public class PlayerHotbar : NetworkBehaviour
 {
-    [SerializeField] private PlayerInventory inventory;
+    private PlayerManager player;
     [SerializeField] private GameObject equippedParent;
 
     [SerializeField] Animator anim;
+
+    public bool attackEnabled { get; private set; } = true;
 
     private int equippedItem = 1;
 
     void Start()
     {
+        this.player = GetComponent<PlayerManager>();
         SetEquippedItem(0);
-    }
 
-    void OnEnable()
-    {
-        inventory.onInventoryChangeEvent += ResetEquipped;
-    }
-
-    void OnDisable()
-    {
-        inventory.onInventoryChangeEvent -= ResetEquipped;
+        player.inventory.onInventoryChangeEvent += ResetEquipped;
     }
 
     void Update()
@@ -54,8 +45,22 @@ public class PlayerHotbar : NetworkBehaviour
             }
 
             anim.SetBool("IsSwinging", Input.GetMouseButton(0));
+            CmdUpdateAnimations(Input.GetMouseButton(0));
         }
-    }    
+    }
+
+    public void SwingWeapon()
+    {
+        if (hasAuthority && attackEnabled)
+        {
+            Debug.Log("Swinging weapon");
+        }
+    }
+
+    void ToggleAttackEnabled(bool attackEnabled)
+    {
+        this.attackEnabled = attackEnabled;
+    }
 
     void ResetEquipped()
     {
@@ -64,27 +69,78 @@ public class PlayerHotbar : NetworkBehaviour
 
     public void SetEquippedItem(int index)
     {
-        inventory.GetSlotObject(equippedItem).SetEquipped(false);
-        inventory.GetSlotObject(index).SetEquipped(true);
-
-        InventoryItem itemToEquip = inventory.GetSlot(index);
-
-        foreach (Transform child in equippedParent.transform)
+        if (hasAuthority)
         {
-            Destroy(child.gameObject);
+            player.inventory.GetSlotObject(equippedItem).SetEquipped(false);
+            player.inventory.GetSlotObject(index).SetEquipped(true);
+
+            InventoryItem itemToEquip = player.inventory.GetSlot(index);
+
+            foreach (Transform child in equippedParent.transform)
+            {
+                Destroy(child.gameObject);
+            }
+
+            if (itemToEquip != null)
+            {
+                GameObject objectToSpawn = Instantiate(itemToEquip.data.equippedPrefab, equippedParent.transform, false);
+                objectToSpawn.name = itemToEquip.data.id;
+                anim.Play("equip_" + itemToEquip.data.id);
+            }
+            else
+            {
+                anim.Play("empty");
+            }
+
+            equippedItem = index;
+
+            CmdSetEquippedItem(itemToEquip);
+        }
+    }
+
+    [Command]
+    public void CmdSetEquippedItem(InventoryItem itemToEquip)
+    {
+        RpcSetEquippedItem(itemToEquip);
+    }
+
+    [Command]
+    void CmdUpdateAnimations(bool IsSwinging)
+    {
+        RpcUpdateAnimations(IsSwinging);
+    }
+
+    [ClientRpc]
+    public void RpcSetEquippedItem(InventoryItem itemToEquip)
+    {
+        if (!hasAuthority)
+        {
+            foreach (Transform child in equippedParent.transform)
+            {
+                Destroy(child.gameObject);
+            }
+
+
+            if (itemToEquip != null)
+            {
+                GameObject objectToSpawn = Instantiate(itemToEquip.data.equippedPrefab, equippedParent.transform, false);
+                objectToSpawn.name = itemToEquip.data.id;
+                anim.Play("equip_" + itemToEquip.data.id);
+            }
+            else
+            {
+                anim.Play("empty");
+            }
         }
 
-        equippedItem = index;
+    }
 
-        if (itemToEquip != null)
+    [ClientRpc]
+    void RpcUpdateAnimations(bool IsSwinging)
+    {
+        if (!hasAuthority)
         {
-            GameObject newHolding = Instantiate(itemToEquip.data.equippedPrefab, equippedParent.transform, false);
-            newHolding.name = itemToEquip.data.id;
-            anim.Play("equip_" + itemToEquip.data.id);
-        }
-        else
-        {
-            anim.Play("empty");
+            anim.SetBool("IsSwinging", IsSwinging);
         }
     }
 }

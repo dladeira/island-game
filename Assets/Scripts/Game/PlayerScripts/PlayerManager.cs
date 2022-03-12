@@ -119,8 +119,7 @@ public class PlayerManager : NetworkBehaviour
         // Spawn dropped items
         for (int i = 0; i < (dropEntireStack ? items.stackSize : 1); i++)
         {
-            ItemObject itemObject = items.data.itemObjectPrefab.GetComponent<ItemObject>();
-            ItemObject spawnedItem = Instantiate(itemObject, position, Quaternion.Euler(0, 0, 0));
+            GameObject spawnedItem = Instantiate(items.data.itemObjectPrefab, position, Quaternion.Euler(0, 0, 0));
             NetworkServer.Spawn(spawnedItem.gameObject);
         }
 

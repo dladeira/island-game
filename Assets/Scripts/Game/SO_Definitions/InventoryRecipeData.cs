@@ -82,7 +82,7 @@ public static class InventoryRecipeDataReadWriteFunctions
             else
             {
                 InventoryItemData empty = ScriptableObject.CreateInstance("InventoryItemData") as InventoryItemData;
-                empty.SetValues("Empty", "Empty", null, null);
+                empty.SetValues("Empty", "Empty", null, null, null);
                 writer.Write<InventoryItemData>(empty);
             }
         }

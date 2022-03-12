@@ -2,21 +2,10 @@ using UnityEngine;
 
 public class PlayerCurrentWeapon : MonoBehaviour
 {
-    PlayerHotbar hotbar;
+    [SerializeField] private PlayerHotbar hotbar;
 
-    // Start is called before the first frame update
-    void Start()
+    public void SwingWeapon()
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    public void SwingWeapon() {
-        Debug.Log("swinging weapon");
+        hotbar.SwingWeapon();
     }
 }
