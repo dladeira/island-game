@@ -12,6 +12,7 @@ public class PlayerManager : NetworkBehaviour
     [Header("Helper Scripts")]
     [SerializeField] private PlayerMovement movement;
     [SerializeField] public PlayerInventory inventory;
+    [SerializeField] public PlayerCrafting crafting;
     [SerializeField] public PlayerStats stats;
 
     [Header("Animation")]
@@ -67,7 +68,7 @@ public class PlayerManager : NetworkBehaviour
                 Cursor.lockState = inventoryOpen ? CursorLockMode.None : CursorLockMode.Locked;
 
                 inventory.ToggleOpen(inventoryOpen);
-                // crafting.ToggleOpen(inventoryOpen);
+                crafting.ToggleOpen(inventoryOpen);
                 movement.ToggleMovement(!inventoryOpen);
                 movement.ToggleLook(!inventoryOpen);
             }

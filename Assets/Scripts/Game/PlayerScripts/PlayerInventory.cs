@@ -76,6 +76,26 @@ public class PlayerInventory : NetworkBehaviour
         return false;
     }
 
+    public bool RemoveItem(InventoryItem item)
+    {
+        int amountLeft = item.stackSize;
+        Debug.Log("amount to remove: " + amountLeft);
+        while (amountLeft > 0)
+        {
+            Debug.Log("amount left: " + amountLeft);
+            int slotId = GetFirstItemSlot(item);
+
+            if (slotId > -1)
+            {
+                amountLeft--;
+                ModifySlot(slotId, -1);
+            }
+            else
+                return false;
+        }
+        return true;
+    }
+
     // ===== Slot methods
 
     public void SetSlot(int slotId, InventoryItem item)
@@ -115,6 +135,20 @@ public class PlayerInventory : NetworkBehaviour
         return GetSlotObject(slotId).GetItem();
     }
 
+    public bool Has(InventoryItem requirement)
+    {
+        foreach (InventoryItem inventoryItem in GetItems())
+        {
+            if (inventoryItem.data.id == requirement.data.id)
+            {
+                if (inventoryItem.stackSize >= requirement.stackSize)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
     public InventorySlot GetSlotObject(int slotId)
     {
         foreach (InventorySlot slot in inventorySlots)
@@ -144,6 +178,20 @@ public class PlayerInventory : NetworkBehaviour
         return -1;
     }
 
+    public void CraftRecipe(InventoryRecipeData recipe)
+    {
+        foreach (InventoryItem requirement in recipe.GetInputItems())
+        {
+            RemoveItem(requirement);
+        }
+
+        foreach (InventoryItem output in recipe.GetOutputItems())
+        {
+            AddItem(output);
+        }
+
+    }
+
     private int GetNextEmptyInventorySlot()
     {
         for (int i = 0; i < inventorySlots.Count; i++)
@@ -156,7 +204,7 @@ public class PlayerInventory : NetworkBehaviour
         return -1;
     }
 
-    private void GetItems()
+    private List<InventoryItem> GetItems()
     {
         List<InventoryItem> items = new List<InventoryItem>();
 
@@ -183,6 +231,8 @@ public class PlayerInventory : NetworkBehaviour
             }
 
         }
+
+        return items;
     }
 
     private void DoItemPickup()

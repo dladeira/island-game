@@ -1,16 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
-using System.Linq;
 using Mirror;
 
 [CreateAssetMenu(menuName = "Recipe Item data")]
 public class InventoryRecipeData : ScriptableObject
 {
     public List<InventoryItemData> input;
-    public List<int> inputAmount;
+    public List<int> inputAmount; // Max size 3
     public List<InventoryItemData> output;
-    public List<int> outputAmount;
+    public List<int> outputAmount; // Max size 3
 
     public void Set(List<InventoryItemData> input, List<int> inputAmount, List<InventoryItemData> output, List<int> outputAmount)
     {
@@ -18,6 +16,39 @@ public class InventoryRecipeData : ScriptableObject
         this.inputAmount = inputAmount;
         this.output = output;
         this.outputAmount = outputAmount;
+    }
+
+    public List<InventoryItem> GetInputItems()
+    {
+        List<InventoryItem> items = new List<InventoryItem>();
+        for (var i = 0; i < input.Count; i++)
+        {
+            items.Add(new InventoryItem(input[i], inputAmount[i]));
+        }
+
+        return items;
+    }
+
+    public List<InventoryItem> GetOutputItems()
+    {
+        List<InventoryItem> items = new List<InventoryItem>();
+        for (var i = 0; i < output.Count; i++)
+        {
+            items.Add(new InventoryItem(output[i], outputAmount[i]));
+        }
+
+        return items;
+    }
+
+    public bool HasRequirements(PlayerInventory inventory)
+    {
+        foreach (InventoryItem requirement in GetInputItems())
+        {
+            if (!inventory.Has(requirement))
+                return false;
+        }
+
+        return true;
     }
 }
 

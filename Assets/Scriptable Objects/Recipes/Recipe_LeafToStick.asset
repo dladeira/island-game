@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Recipe_LeafToStick
   m_EditorClassIdentifier: 
   input:
-  - {fileID: 11400000, guid: b91a3c42660b0e658900832f7a7c32ca, type: 2}
-  inputAmount: 01000000
-  output:
   - {fileID: 11400000, guid: 636b78a8bd8facc5596f65e25520ae38, type: 2}
+  inputAmount: 0100000001000000
+  output:
+  - {fileID: 11400000, guid: b91a3c42660b0e658900832f7a7c32ca, type: 2}
   outputAmount: 01000000

@@ -22,6 +22,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
     // Other info
     private InventoryItem item;
     private bool equipped;
+    private bool interactable;
     private int id;
 
     public void Initialize(PlayerManager player, int id)
@@ -32,6 +33,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
 
         SetItem(null);
         SetEquipped(false);
+        SetInteractable(true);
     }
 
 
@@ -47,6 +49,11 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
             SetDisplay("", "", null);
             this.item = null;
         }
+    }
+
+    public void SetInteractable(bool interactable)
+    {
+        this.interactable = interactable;
     }
 
     private void SetDisplay(string name, string counter, Sprite image)
@@ -75,7 +82,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (item != null && eventData.button == PointerEventData.InputButton.Right)
+        if (interactable && item != null && eventData.button == PointerEventData.InputButton.Right)
         {
             player.DropItem(id, Input.GetKey(KeyCode.LeftShift));
         }
@@ -83,7 +90,7 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (item != null)
+        if (interactable && item != null)
         {
             canvasGroup.alpha = 0.6f;
             canvasGroup.blocksRaycasts = false;
@@ -92,13 +99,16 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        itemToMove.anchoredPosition = new Vector2(0, 0);
-        canvasGroup.blocksRaycasts = true;
+        if (interactable)
+        {
+            itemToMove.anchoredPosition = new Vector2(0, 0);
+            canvasGroup.blocksRaycasts = true;
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (item != null)
+        if (interactable && item != null)
         {
             canvasGroup.alpha = 1;
             itemToMove.anchoredPosition += eventData.delta / canvas.scaleFactor;
@@ -108,21 +118,24 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler, IBeginDragHand
 
     public void OnDrop(PointerEventData eventData)
     {
-        GameObject movingItem = eventData.pointerDrag;
-        InventorySlot sourceSlot = movingItem.GetComponent<InventorySlot>();
-
-        // If a inventory slot has been dragged on this slot and it has a item
-        if (sourceSlot && sourceSlot.item != null)
+        if (interactable)
         {
-            InventoryItem draggedItem = sourceSlot.item;
+            GameObject movingItem = eventData.pointerDrag;
+            InventorySlot sourceSlot = movingItem.GetComponent<InventorySlot>();
 
-            if (this.item != null)
-                sourceSlot.SetItem(this.item);
-            else
-                sourceSlot.SetItem(null);
+            // If a inventory slot has been dragged on this slot and it has a item
+            if (sourceSlot && sourceSlot.item != null)
+            {
+                InventoryItem draggedItem = sourceSlot.item;
 
-            SetItem(draggedItem);
-            player.inventory.UpdateInventory();
+                if (this.item != null)
+                    sourceSlot.SetItem(this.item);
+                else
+                    sourceSlot.SetItem(null);
+
+                SetItem(draggedItem);
+                player.inventory.UpdateInventory();
+            }
         }
     }
 }
