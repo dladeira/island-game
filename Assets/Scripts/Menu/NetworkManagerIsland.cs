@@ -89,6 +89,7 @@ public class NetworkManagerIsland : NetworkManager
         }
         else
         {
+            GamePlayers.Remove(conn.identity.GetComponent<PlayerManager>());
             Destroy(conn.identity);
             base.OnServerDisconnect(conn);
         }
@@ -143,28 +144,13 @@ public class NetworkManagerIsland : NetworkManager
             {
                 var conn = RoomPlayers[i].connectionToClient;
                 PlayerManager playerInstance = Instantiate(gamePlayerPrefab, new Vector3(10, 10, 10), Quaternion.Euler(0, 0, 0));
-                NetworkServer.ReplacePlayerForConnection(conn, playerInstance.gameObject);
                 playerInstance.displayName = (RoomPlayers[i].DisplayName);
-                GamePlayers.Add(playerInstance);
+                NetworkServer.ReplacePlayerForConnection(conn, playerInstance.gameObject);
             }
             base.ServerChangeScene(newSceneName);
             return;
         }
 
         base.ServerChangeScene(newSceneName);
-    }
-
-    public InventoryItemData IdToItem(string itemId)
-    {
-        for (int i = 0; i < itemDatas.Count; i++)
-        {
-            if (itemDatas[i].id == itemId)
-            {
-                return itemDatas[i];
-
-            }
-        }
-
-        return null;
     }
 }

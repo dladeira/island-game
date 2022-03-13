@@ -10,7 +10,7 @@ public class PlayerManager : NetworkBehaviour
     [SerializeField] public Transform playerCamera;
 
     [Header("Helper Scripts")]
-    [SerializeField] private PlayerMovement movement;
+    [SerializeField] public PlayerMovement movement;
     [SerializeField] public PlayerInventory inventory;
     [SerializeField] public PlayerCrafting crafting;
     [SerializeField] public PlayerStats stats;
@@ -18,6 +18,17 @@ public class PlayerManager : NetworkBehaviour
     [Header("Animation")]
     [SerializeField] private Animator animator;
     [SerializeField] public Canvas canvas;
+
+    private NetworkManagerIsland nm;
+    private NetworkManagerIsland actualNm
+    {
+        get
+        {
+            if (nm != null)
+                return nm;
+            return nm = NetworkManager.singleton as NetworkManagerIsland;
+        }
+    }
 
     bool inventoryOpen = false;
 
@@ -39,6 +50,20 @@ public class PlayerManager : NetworkBehaviour
     void OnDisable()
     {
         NetworkManagerIsland.OnClientDisconnected -= ReturnToMainMenu;
+    }
+
+    // Called on every single client that connects
+    public override void OnStartClient()
+    {
+        Debug.Log("started client");
+        actualNm.GamePlayers.Add(this);
+    }
+
+    // Called on every single client that connects
+    public override void OnStopClient()
+    {
+        Debug.Log("stopped client");
+        actualNm.GamePlayers.Remove(this);
     }
 
     void Update()
@@ -101,18 +126,6 @@ public class PlayerManager : NetworkBehaviour
     {
         CmdDropItem(slotId, playerCamera.position + (playerCamera.forward * 0.2f) - (playerCamera.up * 0.2f), dropEntireStack);
     }
-
-    // public void CraftItem(InventoryRecipeData data)
-    // {
-    //     CmdCraftItem(data);
-    // }
-
-    // [Command]
-    // private void CmdCraftItem(InventoryRecipeData data)
-    // {
-    //     RpcCraftItem(data);
-    // }
-
     [Command]
     private void CmdDropItem(int slotId, Vector3 position, bool dropEntireStack)
     {
@@ -135,48 +148,9 @@ public class PlayerManager : NetworkBehaviour
         {
             inventory.SetSlot(slotId, null);
         }
-        else {
+        else
+        {
             inventory.ModifySlot(slotId, -1);
         }
     }
-
-    // [ClientRpc]
-    // private void RpcCraftItem(InventoryRecipeData data)
-    // {
-    //     List<InventoryItemData> itemsToRemove = new List<InventoryItemData>(data.input);
-    //     List<InventoryItemData> itemsToHave = new List<InventoryItemData>(data.input);
-
-    //     for (int haveIndex = data.input.Count - 1; haveIndex >= 0; haveIndex--)
-    //     {
-    //         if (fakeInventory.Has(data.input[haveIndex], data.inputAmount[haveIndex]))
-    //         {
-    //             itemsToHave.RemoveAt(haveIndex);
-    //         }
-    //         else if (hotbar.Has(data.input[haveIndex], data.inputAmount[haveIndex]))
-    //         {
-    //             itemsToHave.RemoveAt(haveIndex);
-    //         }
-    //     }
-
-
-    //     if (itemsToHave.Count <= 0)
-    //     {
-    //         for (int removeIndex = data.input.Count - 1; removeIndex >= 0; removeIndex--)
-    //         {
-    //             if (fakeInventory.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
-    //             {
-    //                 itemsToRemove.RemoveAt(removeIndex);
-    //             }
-    //             else if (hotbar.Remove(data.input[removeIndex], data.inputAmount[removeIndex]))
-    //             {
-    //                 itemsToRemove.RemoveAt(removeIndex);
-    //             }
-    //         }
-    //         for (int addIndex = 0; addIndex < data.output.Count; addIndex++)
-    //         {
-    //             Debug.Log("adding " + data.output[addIndex]);
-    //             fakeInventory.Add(data.output[addIndex], data.outputAmount[addIndex]);
-    //         }
-    //     }
-    // }
 }
