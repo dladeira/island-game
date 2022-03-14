@@ -1,11 +1,15 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 public class PlayerHotbar : NetworkBehaviour
 {
     private PlayerManager player;
     [SerializeField] private GameObject equippedParent;
+    [SerializeField] private LayerMask hitMask;
 
     [SerializeField] Animator anim;
+
+    public List<LivingStructure> hitStructures = new List<LivingStructure>();
 
     public bool attackEnabled { get; private set; } = true;
 
@@ -53,7 +57,20 @@ public class PlayerHotbar : NetworkBehaviour
     {
         if (hasAuthority && attackEnabled)
         {
-            Debug.Log("Swinging weapon");
+            RaycastHit hit;
+
+            if (Physics.Raycast(player.playerCamera.position, player.playerCamera.forward, out hit, 3, hitMask))
+            {
+                LivingStructure structure = hit.transform.gameObject.GetComponent<LivingStructure>();
+
+                if (structure)
+                {
+                    structure.SetHealth(structure.health - 5);
+                }
+
+                hitStructures.Add(structure);
+            }
+
         }
     }
 

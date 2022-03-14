@@ -12,6 +12,7 @@ public class PlayerManager : NetworkBehaviour
     [Header("Helper Scripts")]
     [SerializeField] public PlayerMovement movement;
     [SerializeField] public PlayerInventory inventory;
+    [SerializeField] public PlayerHotbar hotbar;
     [SerializeField] public PlayerCrafting crafting;
     [SerializeField] public PlayerStats stats;
 
