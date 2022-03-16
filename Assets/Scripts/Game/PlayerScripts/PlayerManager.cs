@@ -56,14 +56,12 @@ public class PlayerManager : NetworkBehaviour
     // Called on every single client that connects
     public override void OnStartClient()
     {
-        Debug.Log("started client");
         actualNm.GamePlayers.Add(this);
     }
 
     // Called on every single client that connects
     public override void OnStopClient()
     {
-        Debug.Log("stopped client");
         actualNm.GamePlayers.Remove(this);
     }
 

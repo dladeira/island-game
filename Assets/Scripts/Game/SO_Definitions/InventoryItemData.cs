@@ -45,8 +45,8 @@ public static class InventoryItemDataReadWriteFunctions
             writer.WriteString(value.id);
             writer.WriteString(value.displayName);
             writer.WriteString(AssetDatabase.GetAssetPath(value.icon));
-            writer.WriteString(value.itemObjectPrefab.name);
-            writer.WriteString(value.equippedPrefab.name);
+            writer.WriteString("ItemObject/" + value.itemObjectPrefab.name);
+            writer.WriteString("Equipped/" + value.equippedPrefab.name);
         }
     }
 

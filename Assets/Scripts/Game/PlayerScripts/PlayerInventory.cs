@@ -79,10 +79,9 @@ public class PlayerInventory : NetworkBehaviour
     public bool RemoveItem(InventoryItem item)
     {
         int amountLeft = item.stackSize;
-        Debug.Log("amount to remove: " + amountLeft);
+
         while (amountLeft > 0)
         {
-            Debug.Log("amount left: " + amountLeft);
             int slotId = GetFirstItemSlot(item);
 
             if (slotId > -1)
@@ -273,7 +272,6 @@ public class PlayerInventory : NetworkBehaviour
     [ClientRpc]
     private void RpcPickupItem(ItemObject target)
     {
-        Debug.Log(target);
         target.OnHandlePickupItem(this);
     }
 }
