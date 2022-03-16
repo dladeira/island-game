@@ -273,6 +273,7 @@ public class PlayerInventory : NetworkBehaviour
     [ClientRpc]
     private void RpcPickupItem(ItemObject target)
     {
+        Debug.Log(target);
         target.OnHandlePickupItem(this);
     }
 }

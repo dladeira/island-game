@@ -72,7 +72,7 @@ public class PlayerStats : NetworkBehaviour
                 if (structure && SeenByCamera(structure.gameObject) && Vector3.Distance(this.player.transform.position, structure.transform.position) < 15)
                 {
                     GameObject text = Instantiate(usernameTextPrefab.transform, worldCanvas.transform).gameObject;
-                    Vector3 screenPos = this.player.playerCamera.GetComponent<Camera>().WorldToScreenPoint(structure.transform.position + new Vector3(0, 2.4f, 0));
+                    Vector3 screenPos = this.player.playerCamera.GetComponent<Camera>().WorldToScreenPoint(structure.transform.position + new Vector3(0, 1f, 0));
                     text.GetComponent<TMP_Text>().text = structure.health.ToString();
                     text.GetComponent<RectTransform>().anchoredPosition = screenPos;
                 }
