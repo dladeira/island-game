@@ -1517,7 +1517,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b0fecffa3f624585964b0d0eb21b18e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Port: 7777
+  Port: 6969
   DualMode: 1
   NoDelay: 1
   Interval: 10
@@ -1553,7 +1553,7 @@ MonoBehaviour:
   offlineScene: 
   onlineScene: 
   transport: {fileID: 1251230820}
-  networkAddress: localhost
+  networkAddress: ladeira.eu
   maxConnections: 100
   authenticator: {fileID: 0}
   playerPrefab: {fileID: 8949717100194744646, guid: 44ca268a710f6058a915ec34faf0e04b, type: 3}
@@ -1562,10 +1562,9 @@ MonoBehaviour:
   spawnPrefabs:
   - {fileID: 1168341053583958997, guid: 6dc65d8b78143d52fae33f46ea8451bf, type: 3}
   - {fileID: 6019103102172592656, guid: 58a4749aa4c4496ff84d933f4783672f, type: 3}
-  - {fileID: 3516133041779850618, guid: feeb2fbd572dc85779e51074921f360d, type: 3}
-  - {fileID: 5310076965773010197, guid: 0c796533f06d3826c9990d2af0ab48c9, type: 3}
   - {fileID: 7365466378420543742, guid: 819bc97b0f0c56c1e817b3835990eb55, type: 3}
   - {fileID: 3393651960553259844, guid: 2abdfe0febf23decd97cd42cee6f62c9, type: 3}
+  - {fileID: 5255216722832681974, guid: 1c430cb16def438d2b0e9d62aecfa5db, type: 3}
   lobbyScene: Assets/Scenes/Menu.unity
   gameScene: Assets/Scenes/Game.unity
   roomPlayerPrefab: {fileID: 6089913168278772603, guid: 6dc65d8b78143d52fae33f46ea8451bf, type: 3}

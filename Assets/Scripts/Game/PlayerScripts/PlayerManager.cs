@@ -123,13 +123,11 @@ public class PlayerManager : NetworkBehaviour
 
     public void DropItem(int slotId, bool dropEntireStack)
     {
-        CmdDropItem(slotId, playerCamera.position + (playerCamera.forward * 0.2f) - (playerCamera.up * 0.2f), dropEntireStack);
+        CmdDropItem(inventory.GetSlot(slotId), slotId, playerCamera.position + (playerCamera.forward * 0.2f) - (playerCamera.up * 0.2f), dropEntireStack);
     }
     [Command]
-    private void CmdDropItem(int slotId, Vector3 position, bool dropEntireStack)
+    private void CmdDropItem(InventoryItem items, int slotId, Vector3 position, bool dropEntireStack)
     {
-        InventoryItem items = inventory.GetSlot(slotId);
-
         // Spawn dropped items
         for (int i = 0; i < (dropEntireStack ? items.stackSize : 1); i++)
         {
